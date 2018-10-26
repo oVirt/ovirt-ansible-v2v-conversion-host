@@ -16,7 +16,7 @@ auth --passalgo=sha512 --useshadow
 selinux --enforcing
 firewall --enabled --ssh
 firstboot --disable
-
+network --bootproto=dhcp --onboot=on
 
 %post --log=/root/ks-post-v2v.log --erroronfail
 # Add RHEL OSP repos before Image build
@@ -25,6 +25,7 @@ firstboot --disable
 
 %packages
 ansible
+cloud-init
 ovirt-ansible-v2v-conversion-host
 
 # tasks/install.yml

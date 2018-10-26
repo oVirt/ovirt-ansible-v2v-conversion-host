@@ -16,12 +16,14 @@ auth --passalgo=sha512 --useshadow
 selinux --enforcing
 firewall --enabled --ssh
 firstboot --disable
+network --bootproto=dhcp --onboot=on
 
 repo --name=base --baseurl=http://mirror.centos.org/centos/7/os/x86_64/
 repo --name=epel --baseurl=http://dl.fedoraproject.org/pub/epel/7/x86_64/
 
 %packages
 ansible
+cloud-init
 
 # tasks/install.yml
 nbdkit
