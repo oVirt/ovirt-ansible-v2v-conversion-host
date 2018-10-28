@@ -27,6 +27,7 @@ network --bootproto=dhcp --onboot=on
 ansible
 cloud-init
 ovirt-ansible-v2v-conversion-host
+-NetworkManager
 
 # tasks/install.yml
 nbdkit  # nbdkit source requires RHEL 7.6 or RHV channel
@@ -37,4 +38,29 @@ virt-v2v
 python-six
 python2-openstackclient
 virtio-win
+
+echo -n "Network fixes"
+# initscripts don't like this file to be missing.
+cat > /etc/sysconfig/network << EOF
+NETWORKING=yes
+NOZEROCONF=yes
+EOF
+
+# For cloud images, 'eth0' _is_ the predictable device name, since
+# we don't want to be tied to specific virtual (!) hardware
+rm -f /etc/udev/rules.d/70*
+ln -s /dev/null /etc/udev/rules.d/80-net-name-slot.rules
+
+# simple eth0 config, again not hard-coded to the build hardware
+cat > /etc/sysconfig/network-scripts/ifcfg-eth0 << EOF
+DEVICE="eth0"
+BOOTPROTO="dhcp"
+BOOTPROTOv6="dhcp"
+ONBOOT="yes"
+TYPE="Ethernet"
+USERCTL="yes"
+PEERDNS="yes"
+IPV6INIT="yes"
+PERSISTENT_DHCLIENT="1"
+EOF
 %end
