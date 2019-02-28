@@ -3,8 +3,4 @@
   file:
     dest: "/etc/pki/ca-trust/source/anchors/{{ manageiq_provider.hostname }}-ca-chain.pem"
     state: absent
-  register: result_delete_ca
-
-- name: Update the ca-trust bundle
-  command: /usr/bin/update-ca-trust
-  changed_when: result_delete_ca.changed
+  notify: Update the ca-thrust bundle
