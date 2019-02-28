@@ -3,6 +3,7 @@
   command: yumdownloader --source nbdkit
   args:
     chdir: "{{ v2v_build_dir }}"
+    creates: "{{ v2v_build_dir }}/nbdkit-*.src.rpm"
 
 - name: Identify nbdkit SRPM
   find:
@@ -22,3 +23,4 @@
     "{{ nbdkit_srpm.files[0].path }}"
   args:
     chdir: "{{ v2v_build_dir }}"  # noqa 303
+    creates: "{{ v2v_build_dir }}/nbdkit-plugin-vddk.spec*"

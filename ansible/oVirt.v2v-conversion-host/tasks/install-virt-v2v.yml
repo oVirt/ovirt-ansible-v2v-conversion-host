@@ -11,6 +11,7 @@
   args:
     warn: false
   register: pkg_nbdkit
+  changed_when: false
 
 - name: Install virt-v2v
   yum:

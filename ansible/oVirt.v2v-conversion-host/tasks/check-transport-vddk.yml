@@ -17,6 +17,7 @@
     LD_LIBRARY_PATH: "{{ v2v_vddk_install_dir }}/vmware-vix-disklib-distrib/lib64"
   ignore_errors: "yes"
   register: command_nbdkit_plugin
+  changed_when: false
 
 - name: Set VDDK and nbdkit facts
   set_fact:

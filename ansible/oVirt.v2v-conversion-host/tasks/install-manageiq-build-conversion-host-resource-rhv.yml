@@ -5,7 +5,8 @@
                                                 {{ ansible_machine_id[12:16] }}-{{ ansible_machine_id[16:20] }}-\
                                                 {{ ansible_machine_id[20:] }}"
 
-- uri:
+- name: Get manageiq_get_conversion_host_resources_json from {{ manageiq_url }}
+  uri:
     url: "{{ manageiq_url }}/api/hosts/?expand=resources&attributes=ext_management_system&\
           filter[]=name={{ inventory_hostname }}&filter[]=ext_management_system.name={{ manageiq_provider_name | regex_replace(' ', '%20') }}"
     user: "{{ manageiq_username }}"
