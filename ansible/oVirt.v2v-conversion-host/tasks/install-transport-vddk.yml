@@ -47,9 +47,8 @@
         - pkg_nbdkit.stdout is version_compare('1.2.4', '<')
 
   when:
-    - v2v_vddk_library_installed
-    - v2v_nbdkit_plugin_installed
-    - v2v_nbdkit_plugin_working
+    - not v2v_vddk_library_installed or not v2v_nbdkit_plugin_installed or
+      not v2v_nbdkit_plugin_working
 
 - name: Make sure VDDK plugin is installed
   yum:
