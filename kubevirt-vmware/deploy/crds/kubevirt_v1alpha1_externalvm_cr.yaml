@@ -1,0 +1,20 @@
+apiVersion: kubevirt.io/v1alpha1
+kind: ExternalVm
+metadata:
+  name: rhelpool4
+  labels:
+    provider: example-v2vvmware
+spec:
+  cpus: 1
+  cpusockets: 1
+  disks:
+  - capacity: 4194304
+    filename: '[nsimsolo_vmware1] RHEL_pool_4/RHEL_pool_4.vmdk'
+    label: Hard disk 1
+  guestname: Red Hat Enterprise Linux 7 (64-bit)
+  memory: 2048
+  nics:
+  - label: Network adapter 1
+    mac: 00:1a:4a:16:01:55
+  powerstate: poweredOff
+  vmname: RHEL_pool_4

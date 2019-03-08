@@ -3,6 +3,7 @@ extends: default
 
 rules:
   line-length: disable
+  indentation: {spaces: 2, indent-sequences: consistent}
 
 ignore: |
   .tox/
@@ -10,3 +11,4 @@ ignore: |
   **/govmomi/.travis.yml
   **/govmomi/.goreleaser.yml
   **/mux/.travis.yml
+  **/vendor

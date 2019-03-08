@@ -2,8 +2,6 @@ package v2vvmware
 
 import (
 	"context"
-	"fmt"
-	"github.com/ovirt/v2v-conversion-host/kubevirt-vmware/pkg/controller/utils"
 
 	kubevirtv1alpha1 "github.com/ovirt/v2v-conversion-host/kubevirt-vmware/pkg/apis/kubevirt/v1alpha1"
 
@@ -22,7 +20,7 @@ const PhaseConnecting = "Connecting"
 const PhaseConnectionSuccessful = "ConnectionVerified"
 const PhaseConnectionFailed = "Failed"
 const PhaseLoadingVmsList = "LoadingVmsList"
-const PhaseLoadingVmsListFailed = "LoadingVmsList"
+const PhaseLoadingVmsListFailed = "LoadingVmsListFailed"
 const PhaseLoadingVmDetail = "LoadingVmDetail"
 const PhaseLoadingVmDetailFailed = "LoadingVmDetailFailed"
 
@@ -95,39 +93,22 @@ func (r *ReconcileV2VVmware) Reconcile(request reconcile.Request) (reconcile.Res
 		return reconcile.Result{}, err
 	}
 
-    connectionSecret, err := getConnectionSecret(r, request, instance)
-    if err != nil {
-    	reqLogger.Error(err, "Failed to get Secret object for the VMWare connection")
+	connectionSecret, err := getConnectionSecret(r, request, instance)
+	if err != nil {
+		reqLogger.Error(err, "Failed to get Secret object for the VMWare connection")
+		// TODO reconsider due to missing secret we can get infinit loop here
 		return reconcile.Result{}, err // request will be re-queued
 	}
 	reqLogger.Info("Connection secret retrieved.")
 
-    // Considering recent high-level flow, the list of VMWare VMs is read at most once (means: do not refresh).
-    // If refresh is ever needed, implement either here or re-create the V2VVmware object
+	// Considering recent high-level flow, the list of VMWare VMs is read at most once (means: do not refresh).
+	// If refresh is ever needed, implement either here or re-create the V2VVmware object
 
-	if len(instance.Spec.Vms) == 0 { // list of VMWare VMs is requested to be retrieved
-		err = readVmsList(r, request, connectionSecret)
-		if err != nil {
-			reqLogger.Error(err, "Failed to read list of VMWare VMs.")
-			// The Manager recently does not support delaying of requeued requests after a failure
-			// As a workaround, implement it here to avoid overloading of VMWare server
-			utils.SleepBeforeRetryN(15) // wait at least 15 seconds before retry
-		}
-
-		return reconcile.Result{}, err // request will be re-queued if failed
+	// TODO this should be optimized not to call getVMs everytime Reconcile is called
+	err = readVmsList(r, request, connectionSecret, instance.Name)
+	if err != nil {
+		reqLogger.Error(err, "Failed to read list of VMWare VMs.")
+		// Do not requeue when we failed to collect vms. Possibly we need user to update connection secret to reconcile again
 	}
-
-    // secret is present, list of VMs is available, let's check for  details to be retrieved
-    var lastError error = nil
-    for _, vm := range instance.Spec.Vms { // sequential read is probably good enough, just a single VM or a few of them are expected to be retrieved this way
-    	if vm.DetailRequest {
-			err = readVmDetail(r, request, connectionSecret, vm.Name)
-			if err != nil {
-				reqLogger.Error(err, fmt.Sprintf("Failed to read detail of '%s' VMWare VM.", vm.Name))
-				lastError = err
-			}
-		}
-	}
-
-	return reconcile.Result{}, lastError
+	return reconcile.Result{}, nil
 }

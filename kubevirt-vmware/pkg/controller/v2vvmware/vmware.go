@@ -4,8 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"regexp"
+	"strings"
 
 	kubevirtv1alpha1 "github.com/ovirt/v2v-conversion-host/kubevirt-vmware/pkg/apis/kubevirt/v1alpha1"
+	"github.com/vmware/govmomi/vim25/types"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 /*
@@ -16,39 +21,83 @@ import (
 func getClient(ctx context.Context, loginCredentials *LoginCredentials) (*Client, error) {
 	c, err := NewClient(ctx, loginCredentials)
 	if err != nil {
-		log.Error(err, "GetVMs: failed to create a client.")
+		log.Error(err, "Client creation failed.")
 		return nil, err
 	}
 	return c, nil
 }
 
-func GetVMs(c *Client) ([]string, error) {
+func GetVMs(c *Client, provider string, namespace string) ([]kubevirtv1alpha1.ExternalVm, error) {
 	vms, err := c.GetVMs()
 	if err != nil {
-		log.Error(err, "GetVMs: failed to get list of VMs from VMWare.")
+		log.Error(err, "Getting VMs failed.")
 		return nil, err
 	}
 
-	names := make([]string, len(vms))
-	for i, vm := range vms {
-		names[i] = vm.Summary.Config.Name
+	reg, err := regexp.Compile("[^a-zA-Z0-9]+")
+	if err != nil {
+		log.Error(err, "Faild to compile regexp")
+		return nil, err
 	}
 
-	log.Info(fmt.Sprintf("GetVMs: retrieved list of virtual machines: %s", names))
-	return names, nil
+	eVms := make([]kubevirtv1alpha1.ExternalVm, len(vms))
+	for index, vm := range vms {
+		labels := map[string]string{
+			"provider": provider,
+		}
+
+		var disks []kubevirtv1alpha1.ExternalDisk
+		var nics []kubevirtv1alpha1.ExternalNic
+		for _, device := range vm.Config.Hardware.Device {
+			switch device := device.(type) {
+			case *types.VirtualDisk:
+				disk := kubevirtv1alpha1.ExternalDisk{
+					Label:    device.GetVirtualDevice().DeviceInfo.GetDescription().Label,
+					Filename: device.GetVirtualDevice().Backing.(types.BaseVirtualDeviceFileBackingInfo).GetVirtualDeviceFileBackingInfo().FileName,
+					Capacity: device.CapacityInKB,
+				}
+				disks = append(disks, disk)
+			case *types.VirtualVmxnet3:
+				nic := kubevirtv1alpha1.ExternalNic{
+					Label: device.GetVirtualDevice().DeviceInfo.GetDescription().Label,
+					Mac:   device.MacAddress,
+				}
+				nics = append(nics, nic)
+			}
+		}
+		name := strings.ToLower(vm.Summary.Config.Name)
+
+		eVms[index] = kubevirtv1alpha1.ExternalVm{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      reg.ReplaceAllString(name, ""), // TODO make sure it is unique due to vmware allowing the same name
+				Namespace: namespace,
+				Labels:    labels,
+			},
+			Spec: kubevirtv1alpha1.ExternalVmSpec{
+				VmName:        vm.Summary.Config.Name,
+				Memory:        vm.Config.Hardware.MemoryMB,
+				CPUs:          vm.Config.Hardware.NumCPU,
+				CpuSockets:    vm.Config.Hardware.NumCoresPerSocket,
+				GuestFullName: vm.Config.GuestFullName,
+				PowerState:    string(vm.Summary.Runtime.PowerState),
+				Disks:         disks,
+				Nics:          nics,
+			},
+		}
+	}
+
+	log.Info("Retrieved list of virtual machines")
+	return eVms, nil
 }
 
-func GetVM(c *Client, vmName string) (*kubevirtv1alpha1.VmwareVmDetail, error) {
+func GetVM(c *Client, vmName string) (string, error) {
 	vm, err := c.GetVM(vmName)
 	if err != nil {
 		log.Error(err, fmt.Sprintf("GetVM: failed to get details of VMWare VM '%s'", vmName))
-		return nil, err
+		return "", err
 	}
 
 	raw, _ := json.Marshal(vm)
-	vmDetail := kubevirtv1alpha1.VmwareVmDetail {
-		Raw: string(raw), // TODO: pick what's needed
-	}
 
-	return &vmDetail, nil
+	return string(raw), nil
 }

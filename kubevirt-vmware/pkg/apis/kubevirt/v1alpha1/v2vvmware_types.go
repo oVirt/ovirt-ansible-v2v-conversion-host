@@ -7,23 +7,11 @@ import (
 // Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 // Add custom validation using kubebuilder tags: https://book.kubebuilder.io/beyond_basics/generating_crd.html
 
-type VmwareVmDetail struct {
-    // TODO: list required details
-    Raw string `json:"raw,omitempty"`
-}
-
-type VmwareVm struct {
-    Name string `json:"name"`
-    DetailRequest bool `json:"detailRequest,omitempty"` // true if details are requested to be loaded
-    Detail VmwareVmDetail `json:"detail,omitempty"`
-}
-
 // V2VVmwareSpec defines the desired state of V2VVmware
 // +k8s:openapi-gen=true
 type V2VVmwareSpec struct {
-    Connection string `json:"connection,omitempty"` // name of Secret wit vmware connection details
-    TimeToLive string `json:"timeToLive,omitempty"` // for custom garbage collector
-    Vms []VmwareVm `json:"vms,omitempty"`
+	Connection string `json:"connection,omitempty"` // name of Secret wit vmware connection details
+	TimeToLive string `json:"timeToLive,omitempty"` // for custom garbage collector
 }
 
 // V2VVmwareStatus defines the observed state of V2VVmware

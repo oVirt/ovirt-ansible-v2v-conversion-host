@@ -3,14 +3,16 @@ package v2vvmware
 import (
 	"context"
 	"errors"
-	"fmt"
+	"strings"
 
 	corev1 "k8s.io/api/core/v1"
 
 	kubevirtv1alpha1 "github.com/ovirt/v2v-conversion-host/kubevirt-vmware/pkg/apis/kubevirt/v1alpha1"
 	"github.com/ovirt/v2v-conversion-host/kubevirt-vmware/pkg/controller/utils"
 
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
@@ -24,167 +26,107 @@ func getConnectionSecret(r *ReconcileV2VVmware, request reconcile.Request, insta
 	return secret, err
 }
 
-func getLoginCredentials(connectionSecret *corev1.Secret) (*LoginCredentials) {
+func getLoginCredentials(connectionSecret *corev1.Secret) *LoginCredentials {
 	data := connectionSecret.Data
 
 	credentials := &LoginCredentials{
-		username: string(data["username"]),
-		password: string(data["password"]),
-		host: string(data["url"]),
+		username: strings.TrimSpace(string(data["username"])),
+		password: strings.TrimSpace(string(data["password"])),
+		host:     strings.TrimSpace(string(data["url"])),
 	}
 
-	log.Info(fmt.Sprintf("VMWare credentials retrieved from a Secret, username: '%s', url: '%s'", credentials.username, credentials.host))
+	log.Info("VMWare credentials retrieved from a Secret", credentials.username, credentials.host)
 	return credentials
 }
 
 // read whole list at once
-func readVmsList(r *ReconcileV2VVmware, request reconcile.Request, connectionSecret *corev1.Secret) error {
-	log.Info("readVmsList()")
+func readVmsList(r *ReconcileV2VVmware, request reconcile.Request, connectionSecret *corev1.Secret, provider string) error {
+	log.Info("Getting list of vms")
 
 	updateStatusPhase(r, request, PhaseConnecting)
 	client, err := getClient(context.Background(), getLoginCredentials(connectionSecret))
 	if err != nil {
 		updateStatusPhase(r, request, PhaseConnectionFailed)
+		log.Error(err, "Faild to get client")
 		return err
 	}
 	defer client.Logout()
 
 	updateStatusPhase(r, request, PhaseLoadingVmsList)
-	vmwareVms, err := GetVMs(client)
+	vms, err := GetVMs(client, provider, request.Namespace)
 	if err != nil {
 		updateStatusPhase(r, request, PhaseLoadingVmsListFailed)
+		log.Error(err, "Faild to get vms")
 		return err
 	}
 
-	err = updateVmsList(r, request, vmwareVms, utils.MaxRetryCount)
-	if err != nil {
-		updateStatusPhase(r, request, PhaseLoadingVmsListFailed)
-		return err
+	instance, err := getInstance(r, request)
+	for _, vm := range vms {
+		log.Info("Create vm", "vm", vm)
+		if err := controllerutil.SetControllerReference(instance, &vm, r.scheme); err != nil {
+			log.Error(err, "Faild to set controller ref")
+			return err
+		}
+		// Check if this Vm already exists
+		found := &kubevirtv1alpha1.ExternalVm{}
+		err = r.client.Get(context.TODO(), types.NamespacedName{Name: vm.Name, Namespace: vm.Namespace}, found)
+		if err != nil && apierrors.IsNotFound(err) {
+			log.Info("Creating a new VM", "VM.Namespace", vm.Namespace, "VM.Name", vm.Name)
+			err = r.client.Create(context.TODO(), &vm)
+			if err != nil {
+				// TODO check whether we can skip and continue with other vms
+				updateStatusPhase(r, request, PhaseLoadingVmsListFailed)
+				log.Error(err, "Faild to create vm", "Vm details", vm)
+				return err
+			}
+		} else if err != nil {
+			// TODO check whether we can skip and continue with other vms
+			updateStatusPhase(r, request, PhaseLoadingVmsListFailed)
+			log.Error(err, "Faild to get the vm")
+			return err
+		}
 	}
 
 	updateStatusPhase(r, request, PhaseConnectionSuccessful)
 	return nil
 }
 
-func updateVmsList(r *ReconcileV2VVmware, request reconcile.Request, vmwareVms []string, retryCount int) error {
+func getInstance(r *ReconcileV2VVmware, request reconcile.Request) (*kubevirtv1alpha1.V2VVmware, error) {
 	instance := &kubevirtv1alpha1.V2VVmware{}
 	err := r.client.Get(context.TODO(), request.NamespacedName, instance)
 	if err != nil {
-		log.Error(err, fmt.Sprintf("Failed to get V2VVmware object to update list of VMs, intended to write: '%s'", vmwareVms))
-		if retryCount > 0 {
-			utils.SleepBeforeRetry()
-			return updateVmsList(r, request, vmwareVms, retryCount - 1)
-		}
-		return err
+		log.Error(err, "Failed to get V2VVmware object")
+		return nil, err
 	}
-
-	instance.Spec.Vms = make([]kubevirtv1alpha1.VmwareVm, len(vmwareVms))
-	for index, vmName := range vmwareVms {
-		instance.Spec.Vms[index] = kubevirtv1alpha1.VmwareVm{
-			Name:          vmName,
-			DetailRequest: false, // can be omitted, but just to be clear
-		}
-	}
-
-	err = r.client.Update(context.TODO(), instance)
-	if err != nil {
-		log.Error(err, fmt.Sprintf("Failed to update V2VVmware object with list of VMWare VMs, intended to write: '%s'", vmwareVms))
-		if retryCount > 0 {
-			utils.SleepBeforeRetry()
-			return updateVmsList(r, request, vmwareVms, retryCount - 1)
-		}
-		return err
-	}
-
-	return nil
-}
-
-func readVmDetail(r *ReconcileV2VVmware, request reconcile.Request, connectionSecret *corev1.Secret, vmwareVmName string) (error) {
-	log.Info("readVmDetail()")
-
-	updateStatusPhase(r, request, PhaseConnecting)
-	client, err := getClient(context.Background(), getLoginCredentials(connectionSecret))
-	if err != nil {
-		updateStatusPhase(r, request, PhaseConnectionFailed)
-		return err
-	}
-	defer client.Logout()
-
-	updateStatusPhase(r, request, PhaseLoadingVmDetail)
-
-	vmDetail, err := GetVM(client, vmwareVmName)
-	if err != nil {
-		updateStatusPhase(r, request, PhaseLoadingVmDetailFailed)
-		return err
-	}
-
-	err = updateVmDetail(r, request, vmwareVmName, vmDetail, utils.MaxRetryCount)
-	if err != nil {
-		updateStatusPhase(r, request, PhaseLoadingVmDetailFailed)
-		return err
-	}
-
-	updateStatusPhase(r, request, PhaseConnectionSuccessful)
-	return nil
-}
-
-func updateVmDetail(r *ReconcileV2VVmware, request reconcile.Request, vmwareVmName string, vmDetail *kubevirtv1alpha1.VmwareVmDetail, retryCount int) (error) {
-	instance := &kubevirtv1alpha1.V2VVmware{}
-	err := r.client.Get(context.TODO(), request.NamespacedName, instance)
-	if err != nil {
-		log.Error(err, fmt.Sprintf("Failed to get V2VVmware object to update detail of '%s' VM.", vmwareVmName))
-		if retryCount > 0 {
-			utils.SleepBeforeRetry()
-			return updateVmDetail(r, request, vmwareVmName, vmDetail, retryCount - 1)
-		}
-		return err
-	}
-
-	for index, vm := range instance.Spec.Vms {
-		if  vm.Name == vmwareVmName {
-			instance.Spec.Vms[index].DetailRequest = false // skip this detail next time
-			instance.Spec.Vms[index].Detail = *vmDetail
-		}
-	}
-
-	err = r.client.Update(context.TODO(), instance)
-	if err != nil {
-		log.Error(err, fmt.Sprintf("Failed to update V2VVmware object with detail of '%s' VM.", vmwareVmName))
-		if retryCount > 0 {
-			utils.SleepBeforeRetry()
-			return updateVmDetail(r, request, vmwareVmName, vmDetail, retryCount - 1)
-		}
-		return err
-	}
-
-	return nil
+	return instance, nil
 }
 
 func updateStatusPhase(r *ReconcileV2VVmware, request reconcile.Request, phase string) {
-	log.Info(fmt.Sprintf("updateStatusPhase(): %s", phase))
+	log.Info("Updating provider with", "status phase", phase)
 	updateStatusPhaseRetry(r, request, phase, utils.MaxRetryCount)
 }
 
 func updateStatusPhaseRetry(r *ReconcileV2VVmware, request reconcile.Request, phase string, retryCount int) {
 	// reload instance to workaround issues with parallel writes
+	// TODO those updates expose race condition. Once we introduce ExternalVm we would reduce the need for it.
 	instance := &kubevirtv1alpha1.V2VVmware{}
 	err := r.client.Get(context.TODO(), request.NamespacedName, instance)
 	if err != nil {
-		log.Error(err, fmt.Sprintf("Failed to get V2VVmware object to update status info. Intended to write phase: '%s'", phase))
+		log.Error(err, "Failed to get V2VVmware object to update status info", phase)
 		if retryCount > 0 {
 			utils.SleepBeforeRetry()
-			updateStatusPhaseRetry(r, request, phase, retryCount - 1)
+			updateStatusPhaseRetry(r, request, phase, retryCount-1)
 		}
 		return
 	}
 
 	instance.Status.Phase = phase
-	err = r.client.Update(context.TODO(), instance)
+	err = r.client.Status().Update(context.TODO(), instance)
 	if err != nil {
-		log.Error(err, fmt.Sprintf("Failed to update V2VVmware status. Intended to write phase: '%s'", phase))
+		log.Error(err, "Failed to update V2VVmware status", phase)
 		if retryCount > 0 {
 			utils.SleepBeforeRetry()
-			updateStatusPhaseRetry(r, request, phase, retryCount - 1)
+			updateStatusPhaseRetry(r, request, phase, retryCount-1)
 		}
 	}
 }

@@ -16,9 +16,9 @@ spec:
       serviceAccountName: v2v-vmware
       containers:
         - name: v2v-vmware
-          image: quay.io/mareklibra/v2v-vmware:v0.0.1
+          image: quay.io/pkliczewski/v2v-vmware:latest
           command:
-            - v2v-vmware
+            - kubevirt-vmware
           imagePullPolicy: Always
           env:
             - name: WATCH_NAMESPACE

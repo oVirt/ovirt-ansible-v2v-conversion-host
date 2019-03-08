@@ -8,21 +8,22 @@ package v2vvmware
 import (
 	"context"
 	"fmt"
+	"net/url"
+
 	"github.com/vmware/govmomi"
 	"github.com/vmware/govmomi/property"
 	"github.com/vmware/govmomi/view"
 	"github.com/vmware/govmomi/vim25"
 	"github.com/vmware/govmomi/vim25/mo"
-	"net/url"
 )
 
 type Client struct {
 	Client *govmomi.Client
-	ctx context.Context
+	ctx    context.Context
 }
 
 type LoginCredentials struct {
-	host string
+	host     string
 	username string
 	password string
 }
@@ -41,7 +42,7 @@ func (c *Client) GetVMs() ([]mo.VirtualMachine, error) {
 
 	// Reference: http://pubs.vmware.com/vsphere-60/topic/com.vmware.wssdk.apiref.doc/vim.VirtualMachine.html
 	var vms []mo.VirtualMachine
-	err = v.Retrieve(c.ctx, []string{"VirtualMachine"}, []string{"summary"}, &vms)
+	err = v.Retrieve(c.ctx, []string{"VirtualMachine"}, []string{"config", "summary"}, &vms)
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +98,7 @@ func NewClient(ctx context.Context, credentials *LoginCredentials) (*Client, err
 
 	c := &Client{
 		Client: client,
-		ctx: ctx,
+		ctx:    ctx,
 	}
 	return c, nil
 }

@@ -4,4 +4,4 @@ kind: V2VVmware
 metadata:
   name: example-v2vvmware
 spec:
-  connection: v2v-vmware-token-52ncn
+  connection: v2v-vmware-secret
