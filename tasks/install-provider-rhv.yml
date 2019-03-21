@@ -1,12 +1,23 @@
 ---
 - name: Look for SSH key
   stat:
-    path: "~vdsm/.ssh/id_rsa"
+    path: "/var/lib/vdsm/.ssh/id_rsa"
   ignore_errors: "yes"
   register: stat_ssh_key
 
+- name: Create .ssh directory
+  file:
+    path: /var/lib/vdsm/.ssh
+    owner: vdsm
+    group: kvm
+    mode: 0700
+    state: present
+  become: true
+  become_user: vdsm
+  when: not stat_ssh_key.stat.exists
+
 - name: Create SSH key
-  command: ssh-keygen -b 4096 -t rsa -f ~vdsm/.ssh/id_rsa -N ''
+  command: ssh-keygen -b 4096 -t rsa -f /var/lib/vdsm/.ssh/id_rsa -N ''
   become: true
   become_user: vdsm
   when: not stat_ssh_key.stat.exists
