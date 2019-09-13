@@ -7,25 +7,24 @@ package v2vvmware
 
 import (
 	"context"
-	"fmt"
 	"github.com/vmware/govmomi"
 	"github.com/vmware/govmomi/find"
+	"github.com/vmware/govmomi/object"
 	"github.com/vmware/govmomi/property"
 	"github.com/vmware/govmomi/view"
 	"github.com/vmware/govmomi/vim25"
 	"github.com/vmware/govmomi/vim25/mo"
-	"github.com/vmware/govmomi/object"
 	"net/http"
 	"net/url"
 )
 
 type Client struct {
 	Client *govmomi.Client
-	ctx context.Context
+	ctx    context.Context
 }
 
 type LoginCredentials struct {
-	host string
+	host     string
 	username string
 	password string
 }
@@ -104,7 +103,7 @@ func (c *Client) Logout() error {
 func NewClient(ctx context.Context, credentials *LoginCredentials) (*Client, error) {
 	insecure := true // TODO
 
-	log.Info(fmt.Sprintf("NewClient, user: '%s', host: '%s'", credentials.username, credentials.host))
+	log.Info("NewClient", "User", credentials.username, "Host", credentials.host)
 
 	u := &url.URL{
 		Scheme: "https",
@@ -121,7 +120,7 @@ func NewClient(ctx context.Context, credentials *LoginCredentials) (*Client, err
 
 	c := &Client{
 		Client: client,
-		ctx: ctx,
+		ctx:    ctx,
 	}
 	return c, nil
 }

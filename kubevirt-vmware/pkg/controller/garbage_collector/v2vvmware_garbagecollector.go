@@ -27,7 +27,7 @@ const vCenterTemporaryLabel = "cnv.io/temporary"
 const DefaultTimeToLiveDuration = time.Hour * 1
 
 var doneResult = reconcile.Result{} // no requeue
-var rescheduleResult = reconcile.Result{RequeueAfter: time.Minute*5}
+var rescheduleResult = reconcile.Result{RequeueAfter: time.Minute * 5}
 
 var log = logf.Log.WithName("gc_v2vvmware")
 
@@ -73,7 +73,7 @@ func (r *ReconcileV2VVmware) updateDeletionTimestamp(namespacedName types.Namesp
 	if err != nil {
 		if counter > 0 {
 			utils.SleepBeforeRetry()
-			return r.updateDeletionTimestamp(namespacedName, valueTime, counter - 1)
+			return r.updateDeletionTimestamp(namespacedName, valueTime, counter-1)
 		}
 		return err
 	}
@@ -81,10 +81,10 @@ func (r *ReconcileV2VVmware) updateDeletionTimestamp(namespacedName types.Namesp
 	obj.Spec.TimeToLive = value
 	err = r.client.Update(context.TODO(), obj)
 	if err != nil {
-		log.Error(err, fmt.Sprintf("Failed to update V2VVmware timeToLive. Intended to write: '%s'", value))
+		log.Error(err, "Failed to update V2VVmware timeToLive", "Intended to write", value)
 		if counter > 0 {
 			utils.SleepBeforeRetry()
-			return r.updateDeletionTimestamp(namespacedName, valueTime, counter - 1)
+			return r.updateDeletionTimestamp(namespacedName, valueTime, counter-1)
 		}
 	}
 	return nil
@@ -97,7 +97,7 @@ func (r *ReconcileV2VVmware) updateSecretDeletionTimestamp(namespacedName types.
 	if err != nil {
 		if counter > 0 {
 			utils.SleepBeforeRetry()
-			return r.updateSecretDeletionTimestamp(namespacedName, valueTime, counter - 1)
+			return r.updateSecretDeletionTimestamp(namespacedName, valueTime, counter-1)
 		}
 		return err
 	}
@@ -105,17 +105,16 @@ func (r *ReconcileV2VVmware) updateSecretDeletionTimestamp(namespacedName types.
 	obj.Data["timeToLive"] = []byte(value)
 	err = r.client.Update(context.TODO(), obj)
 	if err != nil {
-		log.Error(err, fmt.Sprintf("Failed to update Secret timeToLive. Intended to write: '%s'", value))
+		log.Error(err, "Failed to update Secret timeToLive", "Intended to write", value)
 		if counter > 0 {
 			utils.SleepBeforeRetry()
-			return r.updateSecretDeletionTimestamp(namespacedName, valueTime, counter - 1)
+			return r.updateSecretDeletionTimestamp(namespacedName, valueTime, counter-1)
 		}
 	}
 	return nil
 }
 
-
-func (r *ReconcileV2VVmware) pruneV2VVMwares(reqLogger logr.Logger, namespace string ) reconcile.Result {
+func (r *ReconcileV2VVmware) pruneV2VVMwares(reqLogger logr.Logger, namespace string) reconcile.Result {
 	result := doneResult
 
 	opts := &client.ListOptions{
@@ -129,27 +128,27 @@ func (r *ReconcileV2VVmware) pruneV2VVMwares(reqLogger logr.Logger, namespace st
 		return rescheduleResult
 	}
 
-	log.Info(fmt.Sprintf("List of V2VVMWare objects retrieved, count: %d", len(v2vvmwares.Items)))
+	log.Info("List of V2VVMWare objects retrieved", "Count", len(v2vvmwares.Items))
 	for _, obj := range v2vvmwares.Items {
 		if len(obj.Spec.TimeToLive) > 0 { // timeToLive is set
 			result = rescheduleResult
-			reqLogger.Info(fmt.Sprintf("Object with timeToLive found, name = '%s', value = '%s', now = '%s'", obj.Name, obj.Spec.TimeToLive, time.Now().Format(time.RFC3339)))
+			reqLogger.Info("Object with timeToLive found", "Name", obj.Name, "Value", obj.Spec.TimeToLive, "Now", time.Now().Format(time.RFC3339))
 			timeToLive, _ := time.Parse(time.RFC3339, obj.Spec.TimeToLive)
 
 			if time.Now().After(timeToLive) {
-				reqLogger.Info(fmt.Sprintf("Time to live is gone for V2VVmware object '%s', ttl = '%s'. Will be removed", obj.Name, obj.Spec.TimeToLive))
+				reqLogger.Info("Time to live is gone for V2VVmware object. Will be removed", "V2VVmware object", obj.Name, "ttl", obj.Spec.TimeToLive)
 				err = r.client.Delete(context.TODO(), &obj) // if failed now, it will be deleted next time
 				if err != nil {
-					reqLogger.Error(err, fmt.Sprintf("Failed to remove V2VVmware object '%s' after time out, will be scheduled for next round.", obj.Name))
+					reqLogger.Error(err, "Failed to remove V2VVmware object after time out, will be scheduled for next round.", "V2VVmware object", obj.Name)
 				}
 			}
 		} else if obj.Labels[vCenterTemporaryLabel] == "true" {
 			result = rescheduleResult
-			reqLogger.Info(fmt.Sprintf("V2VVMware with '%s' label found, name = '%s'. TimeToLive will be set.", vCenterTemporaryLabel, obj.Name))
+			reqLogger.Info("V2VVMware found. TimeToLive will be set.", "Label", vCenterTemporaryLabel, "Name", obj.Name)
 			deletionTimeStamp := obj.CreationTimestamp.Time.Add(DefaultTimeToLiveDuration)
 			err := r.updateDeletionTimestamp(types.NamespacedName{Name: obj.Name, Namespace: obj.Namespace}, deletionTimeStamp, utils.MaxRetryCount)
 			if err != nil {
-				reqLogger.Info(fmt.Sprintf("Permanently failed to update timeToLive of '%s' V2VVMWare", obj.Name))
+				reqLogger.Info("Permanently failed to update timeToLive of V2VVMWare", "V2VVMWare", obj.Name)
 				// ignore and continue with remaining objects
 			}
 		}
@@ -158,8 +157,7 @@ func (r *ReconcileV2VVmware) pruneV2VVMwares(reqLogger logr.Logger, namespace st
 	return result
 }
 
-
-func (r *ReconcileV2VVmware) pruneSecrets(reqLogger logr.Logger, namespace string ) reconcile.Result {
+func (r *ReconcileV2VVmware) pruneSecrets(reqLogger logr.Logger, namespace string) reconcile.Result {
 	result := doneResult
 
 	opts := &client.ListOptions{
@@ -173,24 +171,24 @@ func (r *ReconcileV2VVmware) pruneSecrets(reqLogger logr.Logger, namespace strin
 		return rescheduleResult
 	}
 
-	log.Info(fmt.Sprintf("List of Secret objects retrieved, count: %d", len(secrets.Items)))
+	log.Info(fmt.Sprintf("List of Secret objects retrieved", "Count", len(secrets.Items)))
 	for _, obj := range secrets.Items {
 		timeToLiveStr := string(obj.Data["timeToLive"])
 		if len(timeToLiveStr) > 0 { // timeToLive is set
 			result = rescheduleResult
-			reqLogger.Info(fmt.Sprintf("Secret with timeToLive found, name = '%s', value = '%s', now = '%s'", obj.Name, timeToLiveStr, time.Now().Format(time.RFC3339)))
+			reqLogger.Info("Secret with timeToLive found", "Name", obj.Name, "Value", timeToLiveStr, "Now", time.Now().Format(time.RFC3339))
 			timeToLive, _ := time.Parse(time.RFC3339, timeToLiveStr)
 
 			if time.Now().After(timeToLive) {
-				reqLogger.Info(fmt.Sprintf("Time to live is gone for Secret object '%s', ttl = '%s'. Will be removed", obj.Name, timeToLiveStr))
+				reqLogger.Info("Time to live is gone for Secret object. Will be removed", "Secret object", obj.Name, "ttl", timeToLiveStr)
 				err = r.client.Delete(context.TODO(), &obj) // if failed now, it will be deleted next time
 				if err != nil {
-					reqLogger.Error(err, fmt.Sprintf("Failed to remove Secret object '%s' after time out, will be scheduled for next round.", obj.Name))
+					reqLogger.Error(err, "Failed to remove Secret object after time out, will be scheduled for next round.", "Secret object", obj.Name)
 				}
 			}
 		} else if obj.Labels[vCenterTemporaryLabel] == "true" {
 			result = rescheduleResult
-			reqLogger.Info(fmt.Sprintf("Secret with '%s' label found, name = '%s'. TimeToLive will be set.", vCenterTemporaryLabel, obj.Name))
+			reqLogger.Info("Secret found. TimeToLive will be set.", "Label", vCenterTemporaryLabel, "Name", obj.Name)
 			deletionTimeStamp := obj.CreationTimestamp.Time.Add(DefaultTimeToLiveDuration)
 			err := r.updateSecretDeletionTimestamp(types.NamespacedName{Name: obj.Name, Namespace: obj.Namespace}, deletionTimeStamp, utils.MaxRetryCount)
 			if err != nil {
@@ -202,7 +200,6 @@ func (r *ReconcileV2VVmware) pruneSecrets(reqLogger logr.Logger, namespace strin
 
 	return result
 }
-
 
 func (r *ReconcileV2VVmware) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)

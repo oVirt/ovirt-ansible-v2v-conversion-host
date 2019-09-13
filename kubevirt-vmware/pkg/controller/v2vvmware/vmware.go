@@ -3,7 +3,6 @@ package v2vvmware
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	kubevirtv1alpha1 "github.com/ovirt/v2v-conversion-host/kubevirt-vmware/pkg/apis/kubevirt/v1alpha1"
 )
@@ -34,23 +33,23 @@ func GetVMs(c *Client) ([]string, string, error) {
 		names[i] = vm.Summary.Config.Name
 	}
 
-	log.Info(fmt.Sprintf("GetVMs: thumbprint=%s; VMs: %s", thumbprint, names))
+	log.Info("GetVMs", "Thumbprint", thumbprint, "VMs", names)
 	return names, thumbprint, nil
 }
 
 func GetVM(c *Client, vmName string) (*kubevirtv1alpha1.VmwareVmDetail, error) {
 	vm, hostPath, err := c.GetVM(vmName)
 	if err != nil {
-		log.Error(err, fmt.Sprintf("GetVM: failed to get details of VMWare VM '%s'", vmName))
+		log.Error(err, "GetVM: failed to get details", "VMWare VM", vmName)
 		return nil, err
 	}
 
 	raw, _ := json.Marshal(vm)
-	vmDetail := kubevirtv1alpha1.VmwareVmDetail {
-		Raw: string(raw), // TODO: pick what's needed
+	vmDetail := kubevirtv1alpha1.VmwareVmDetail{
+		Raw:      string(raw), // TODO: pick what's needed
 		HostPath: hostPath,
 	}
-	log.Info(fmt.Sprintf("Fetched VM: %s, host: %s, data: %s", vmName, hostPath, vmDetail.Raw))
+	log.Info("Fetched VM", "VM", vmName, "Host", hostPath, "Data", vmDetail.Raw)
 
 	return &vmDetail, nil
 }
