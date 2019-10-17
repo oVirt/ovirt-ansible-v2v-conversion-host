@@ -429,10 +429,10 @@ class OSPHost(BaseHost):
                     ipaddr = ipaddress.ip_address(nic['ip_address'])
                     network = ipaddress.ip_network(subnet["Subnet"])
                     if ipaddr in network:
-                            port_cmd.extend([
-                                '--fixed-ip',
-                                'ip-address=%s' % nic['ip_address'],
-                            ])
+                        port_cmd.extend([
+                            '--fixed-ip',
+                            'ip-address=%s' % nic['ip_address'],
+                        ])
                         break
             for grp in data['osp_security_groups_ids']:
                 port_cmd.extend(['--security-group', grp])
