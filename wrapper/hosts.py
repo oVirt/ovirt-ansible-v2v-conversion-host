@@ -1,3 +1,4 @@
+import ipaddress
 import json
 import logging
 import os
@@ -11,7 +12,6 @@ import uuid
 
 from contextlib import contextmanager
 from io import BytesIO
-from netaddr import IPAddress, IPNetwork
 from six.moves.urllib.parse import urlparse
 
 from .common import error, hard_error, log_command_safe
@@ -426,9 +426,11 @@ class OSPHost(BaseHost):
                 ]
                 subnets = json.load(self._run_openstack(subnets_cmd, data))
                 for subnet in subnets:
-                    if IPAddress(nic['ip_address']) in IPNetwork(subnet["Subnet"]):
-                        port_cmd.extend([
-                            '--fixed-ip', 'ip-address=%s' % nic['ip_address'],
+                    if ipaddress.ip_addres(nic['ip_address'])
+                        in ipaddress.ip_network(subnet["Subnet"]):
+                            port_cmd.extend([
+                                '--fixed-ip',
+                                'ip-address=%s' % nic['ip_address'],
                             ])
                         break
             for grp in data['osp_security_groups_ids']:
