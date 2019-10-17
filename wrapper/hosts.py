@@ -426,8 +426,9 @@ class OSPHost(BaseHost):
                 ]
                 subnets = json.load(self._run_openstack(subnets_cmd, data))
                 for subnet in subnets:
-                    if ipaddress.ip_addres(nic['ip_address'])
-                        in ipaddress.ip_network(subnet["Subnet"]):
+                    ipaddr = ipaddress.ip_address(nic['ip_address'])
+                    network = ipaddress.ip_network(subnet["Subnet"])
+                    if ipaddr in network:
                             port_cmd.extend([
                                 '--fixed-ip',
                                 'ip-address=%s' % nic['ip_address'],
