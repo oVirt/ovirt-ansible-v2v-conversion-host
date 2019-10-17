@@ -430,6 +430,7 @@ class OSPHost(BaseHost):
                         port_cmd.extend([
                             '--fixed-ip', 'ip-address=%s' % nic['ip_address'],
                             ])
+                        break
             for grp in data['osp_security_groups_ids']:
                 port_cmd.extend(['--security-group', grp])
             port = self._run_openstack(port_cmd, data, destination=True)
