@@ -425,7 +425,7 @@ class OSPHost(BaseHost):
                     '-f', 'json'
                 ]
                 subnets_json = self._run_openstack(subnets_cmd, data)
-                if not subnets_json is None:
+                if subnets_json is not None:
                     subnets = json.loads(subnets_json)
                     for subnet in subnets:
                         network = subnet["Subnet"]
