@@ -4,4 +4,3 @@ six
 yamllint
 tox
 flake8
-ipaddress
