@@ -755,6 +755,15 @@ class VDSMHost(BaseHost):
                                 ('false' if data['insecure_connection'] else
                                  'true')])
 
+            if 'luks_keys_files' in data:
+                for luks_key in data['luks_keys_files']:
+                    v2v_args.extend([
+                        '--key',
+                        '%s:file:%s' % (
+                            luks_key['device'],
+                            luks_key['filename']
+                        )
+                    ])
         elif 'export_domain' in data:
             v2v_args.extend([
                 '-o', 'rhv',
