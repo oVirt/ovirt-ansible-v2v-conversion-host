@@ -546,7 +546,6 @@ class OSPHost(BaseHost):
         net_prefix_bin = self._get_prefix_bin(netaddr, netsize)
         if ip_prefix_bin == net_prefix_bin:
             return True
-
         return False
 
     def _ip_to_binary(self, ipaddr):
