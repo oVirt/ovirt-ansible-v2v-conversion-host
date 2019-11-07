@@ -483,6 +483,12 @@ class OSPHost(BaseHost):
             v2v_args.extend([
                 '-oo', 'verify-server-certificate=false'
                 ])
+        if 'luks_keys_files' in data:
+            for luks_key in data['luks_keys_files']:
+                v2v_args.extend([
+                    '--key',
+                    '%s:file:%s' % (luks_key['device'], luks_key['filename'])
+                ])
         return v2v_args, v2v_env
 
     def set_user(self, data):
