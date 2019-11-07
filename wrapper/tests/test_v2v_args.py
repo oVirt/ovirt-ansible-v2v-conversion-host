@@ -47,10 +47,16 @@ class TestV2vArgs(unittest.TestCase):
         'output_format': 'raw',
         'insecure_connection': False,
 
-        'luks_keys_files': {
-            '/dev/sda1': '/tmp/luks/sda1',
-            '/dev/sda2': '/tmp/luks/sda2',
-        }
+        'luks_keys_files': [
+            {
+                'device': '/dev/sda1',
+                'filename': '/tmp/luks/sda1',
+            },
+            {
+                'device': '/dev/sda2',
+                'filename': '/tmp/luks/sda2',
+            }
+        ]
     }
 
     def test_vddk_basic(self):
