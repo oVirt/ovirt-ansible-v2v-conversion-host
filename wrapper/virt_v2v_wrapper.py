@@ -487,21 +487,20 @@ def main():
                                                   host.get_uid(),
                                                   host.get_gid())
 
-        if 'luks_keys_vault' in data:
-            if not os.exists(data['luks_keys_vault']):
-                hard_error("LUKS keys vault doesn't exist")
+        if 'luks_keys_vault' not in data:
+            data['luks_keys_vault'] = '/tmp/v2v_luks_keys_vault.json'
+        if os.exists(data['luks_keys_vault']):
             luks_keys_vault = json.load(data['luks_keys_vault'])
-            if data['vm_name'] not in luks_keys_vault:
-                hard_error('Virtual machine not found in LUKS keys file')
-            data['luks_keys_files'] = []
-            for luks_key in luks_keys_vault[data['vm_name']]:
-                data['luks_keys_files'].append({
-                    'device': luks_key['device'],
-                    'filename': write_password(luks_key['key'],
-                                               password_files,
-                                               host.get_uid(),
-                                               host.get_gid())
-                })
+            if data['vm_name'] in luks_keys_vault:
+                data['luks_keys_files'] = []
+                for luks_key in luks_keys_vault[data['vm_name']]:
+                    data['luks_keys_files'].append({
+                        'device': luks_key['device'],
+                        'filename': write_password(luks_key['key'],
+                                                   password_files,
+                                                   host.get_uid(),
+                                                   host.get_gid())
+                    })
 
         try:
             if 'source_disks' in data:
