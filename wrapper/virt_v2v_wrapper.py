@@ -25,6 +25,7 @@ import pycurl
 import re
 import signal
 import subprocess
+import stat
 import sys
 import six
 import tempfile
