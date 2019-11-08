@@ -124,6 +124,16 @@ def prepare_command(data, v2v_caps, agent_sock=None):
                 v2v_args.extend(['--bridge', '%s:%s' %
                                 (mapping['source'], mapping['destination'])])
 
+    if 'luks_keys_files' in data:
+        for luks_key in data['luks_keys_files']:
+            v2v_args.extend([
+                '--key',
+                '%s:file:%s' % (
+                    luks_key['device'],
+                    luks_key['filename']
+                )
+            ])
+
     # Prepare environment
     v2v_env = os.environ.copy()
     v2v_env['LANG'] = 'C'
@@ -488,8 +498,19 @@ def main():
                                                   host.get_gid())
 
         if 'luks_keys_vault' not in data:
-            data['luks_keys_vault'] = '/tmp/v2v_luks_keys_vault.json'
+            data['luks_keys_vault'] = os.path.join(
+                os.environ['HOME'],
+                '.v2v_luks_keys_vault.json'
+            )
         if os.exists(data['luks_keys_vault']):
+            file_stat = os.stat(data['luks_keys_vaul'])
+            if file_stat.st_uid != host.get_uid():
+                hard_error('LUKS keys vault does\'nt belong to'
+                           'user running virt-v2v-wrapper')
+            if not bool(file_stat.st_mode & stat.S_IRWXO):
+                hard_error('LUKS keys vault is accessible to others')
+            if not bool(file_stat.st_mode & stat.S_IRWXG):
+                hard_error('LUKS keys vault is accessible to group')
             luks_keys_vault = json.load(data['luks_keys_vault'])
             if data['vm_name'] in luks_keys_vault:
                 data['luks_keys_files'] = []
