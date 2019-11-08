@@ -87,6 +87,16 @@ class TestRHV(unittest.TestCase):
         'install_drivers': False,
         'output_format': 'raw',
         'insecure_connection': False,
+        'luks_keys_files': [
+            {
+                'device': '/dev/sda1',
+                'filename': '/tmp/luks/sda1',
+            },
+            {
+                'device': '/dev/sda2',
+                'filename': '/tmp/luks/sda2',
+            }
+        ]
     }
 
     VDDK_EXPORT = {
@@ -116,6 +126,8 @@ class TestRHV(unittest.TestCase):
             '-oo', 'rhv-cafile=/rhv/ca.pem',
             '-oo', 'rhv-cluster=Default',
             '-oo', 'rhv-direct',
+            '--key', '/dev/sda1:file:/tmp/luks/sda1',
+            '--key', '/dev/sda2:file:/tmp/luks/sda2',
         ]
         host = hosts.BaseHost.factory(hosts.BaseHost.TYPE_VDSM)
         v2v_args, v2v_env = host.prepare_command(
@@ -136,6 +148,8 @@ class TestRHV(unittest.TestCase):
             '-oo', 'rhv-cluster=Default',
             '-oo', 'rhv-direct',
             '-oo', 'rhv-verifypeer=false',
+            '--key', '/dev/sda1:file:/tmp/luks/sda1',
+            '--key', '/dev/sda2:file:/tmp/luks/sda2',
         ]
         host = hosts.BaseHost.factory(hosts.BaseHost.TYPE_VDSM)
         v2v_args, v2v_env = host.prepare_command(

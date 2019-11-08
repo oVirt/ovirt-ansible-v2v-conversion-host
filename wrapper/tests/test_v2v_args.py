@@ -46,17 +46,6 @@ class TestV2vArgs(unittest.TestCase):
         'install_drivers': False,
         'output_format': 'raw',
         'insecure_connection': False,
-
-        'luks_keys_files': [
-            {
-                'device': '/dev/sda1',
-                'filename': '/tmp/luks/sda1',
-            },
-            {
-                'device': '/dev/sda2',
-                'filename': '/tmp/luks/sda2',
-            }
-        ]
     }
 
     def test_vddk_basic(self):
@@ -73,8 +62,6 @@ class TestV2vArgs(unittest.TestCase):
             '-io', 'vddk-libdir=/opt/vmware-vix-disklib-distrib',
             '-io', 'vddk-thumbprint=01:23:45:67:89:AB:CD:EA:DB:EE:F0:12:34:56:78:9A:BC:DE:F0:12',  # NOQA E501
             '--password-file', '/vmware/password',
-            '--key', '/dev/sda1:file:/tmp/luks/sda1',
-            '--key', '/dev/sda2:file:/tmp/luks/sda2',
         ]
         v2v_args, v2v_env = wrapper.prepare_command(data, [])
         self.assertEqual(v2v_args, expected)

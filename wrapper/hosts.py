@@ -487,7 +487,10 @@ class OSPHost(BaseHost):
             for luks_key in data['luks_keys_files']:
                 v2v_args.extend([
                     '--key',
-                    '%s:file:%s' % (luks_key['device'], luks_key['filename'])
+                    '%s:file:%s' % (
+                        luks_key['device'],
+                        luks_key['filename']
+                    )
                 ])
         return v2v_args, v2v_env
 
@@ -755,6 +758,7 @@ class VDSMHost(BaseHost):
                                 ('false' if data['insecure_connection'] else
                                  'true')])
 
+            print("%s" % data)
             if 'luks_keys_files' in data:
                 for luks_key in data['luks_keys_files']:
                     v2v_args.extend([
