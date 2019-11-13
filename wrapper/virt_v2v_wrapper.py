@@ -508,9 +508,9 @@ def main():
             if file_stat.st_uid != host.get_uid():
                 hard_error('LUKS keys vault does\'nt belong to'
                            'user running virt-v2v-wrapper')
-            if not bool(file_stat.st_mode & stat.S_IRWXO):
+            if file_stat.st_mode & stat.S_IRWXO > 0:
                 hard_error('LUKS keys vault is accessible to others')
-            if not bool(file_stat.st_mode & stat.S_IRWXG):
+            if file_stat.st_mode & stat.S_IRWXG > 0:
                 hard_error('LUKS keys vault is accessible to group')
             luks_keys_vault = json.load(data['luks_keys_vault'])
             if data['vm_name'] in luks_keys_vault:
