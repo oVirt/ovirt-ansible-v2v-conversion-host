@@ -28,7 +28,12 @@ setup(
     extras_require={
         'ovirt': 'ovirt-engine-sdk-python',
     },
-    # tests_require=['tox'],
+    # tests_require=[
+    #     'tox',
+    #     'yamllint',
+    #     'flake8',
+    #     'pylint',
+    # ],
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Information Technology',
