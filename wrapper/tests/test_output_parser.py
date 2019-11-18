@@ -6,10 +6,10 @@ class TestOutputParser(unittest.TestCase):
 
     def setUp(self):
         # Destroy any previous state
-        wrapper.State.instance = None
+        wrapper.STATE.reset()
 
     def test_disk_number(self):
-        state = wrapper.State().instance
+        state = wrapper.STATE
         state.v2v_log = '/dev/null'
         state.machine_readable_log = '/dev/null'
         with wrapper.log_parser() as parser:
@@ -28,7 +28,7 @@ class TestOutputParser(unittest.TestCase):
             self.assertEqual(state['disk_count'], 3)
 
     def test_locate_disk(self):
-        state = wrapper.State().instance
+        state = wrapper.STATE
         state.v2v_log = '/dev/null'
         state.machine_readable_log = '/dev/null'
         with wrapper.log_parser() as parser:
@@ -45,7 +45,7 @@ class TestOutputParser(unittest.TestCase):
             self.assertEqual(state['disks'][2]['path'], '[store1] path3.vmdk')
 
     def test_progress(self):
-        state = wrapper.State().instance
+        state = wrapper.STATE
         state.v2v_log = '/dev/null'
         state.machine_readable_log = '/dev/null'
         with wrapper.log_parser() as parser:
@@ -70,7 +70,7 @@ class TestOutputParser(unittest.TestCase):
     #         self.assertEqual(parser._current_path, '[store1] /path1.vmdk')
 
     def test_rhv_disk_path_vddk(self):
-        state = wrapper.State().instance
+        state = wrapper.STATE
         state.v2v_log = '/dev/null'
         state.machine_readable_log = '/dev/null'
         with wrapper.log_parser() as parser:
@@ -80,7 +80,7 @@ class TestOutputParser(unittest.TestCase):
             self.assertEqual(parser._current_path, '[store1] /path1.vmdk')
 
     def test_rhv_disk_uuid(self):
-        state = wrapper.State().instance
+        state = wrapper.STATE
         state.v2v_log = '/dev/null'
         state.machine_readable_log = '/dev/null'
         with wrapper.log_parser() as parser:
@@ -96,7 +96,7 @@ class TestOutputParser(unittest.TestCase):
                 b'11111111-1111-1111-1111-111111111111')
 
     def test_osp_volume_uuid(self):
-        state = wrapper.State().instance
+        state = wrapper.STATE
         state.v2v_log = '/dev/null'
         state.machine_readable_log = '/dev/null'
         with wrapper.log_parser() as parser:

@@ -6,7 +6,7 @@ import six
 import subprocess
 import sys
 
-from .singleton import State
+from .singleton import STATE
 
 if six.PY3:
     xrange = range
@@ -60,7 +60,7 @@ def error(short_message, *args, **kwargs):
     else:
         logging.info('have error: %r %r', args, kwargs)
         logging.error(*args, **kwargs)
-    state = State().instance
+    state = STATE
     state['last_message'] = {
         'message': short_message,
         'type': 'error'

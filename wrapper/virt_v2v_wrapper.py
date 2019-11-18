@@ -31,7 +31,7 @@ import six
 import tempfile
 import time
 
-from .singleton import State
+from .singleton import STATE
 from .common import error, hard_error, log_command_safe
 from .hosts import BaseHost, CNVHost
 from .runners import SystemdRunner
@@ -92,7 +92,7 @@ def daemonize():
 
 
 def prepare_command(data, v2v_caps, agent_sock=None):
-    state = State().instance
+    state = STATE
     v2v_args = [
         '-v', '-x',
         data['vm_name'],
@@ -152,7 +152,7 @@ def prepare_command(data, v2v_caps, agent_sock=None):
 
 def throttling_update(runner, initial=None):
     """ Update throttling """
-    state = State().instance
+    state = STATE
     if initial is not None:
         throttling = initial
     else:
@@ -237,7 +237,7 @@ def throttling_update(runner, initial=None):
 
 def wrapper(host, data, v2v_caps, agent_sock=None):
 
-    state = State().instance
+    state = STATE
     v2v_args, v2v_env = prepare_command(data, v2v_caps, agent_sock)
     v2v_args, v2v_env = host.prepare_command(
         data, v2v_args, v2v_env, v2v_caps)
@@ -380,7 +380,7 @@ def main():
             print('virt-v2v-wrapper %s' % VERSION)
             sys.exit(0)
 
-    state = State().instance
+    state = STATE
 
     # Read and parse input -- hopefully this should be safe to do as root
     data = json.load(sys.stdin)

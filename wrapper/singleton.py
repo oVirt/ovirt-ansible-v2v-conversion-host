@@ -4,66 +4,95 @@ import json
 import stat
 
 
-class State(object):
+class _State(object):
     """
-    State object (which is a dict inside) implemented as singleton
+    State object using a dict for data storage.
 
     This is not just the contain of state file, but it contains all the
     internal configuration.
+
+    Gradual conversion from the dict to properties is to be expected.
     """
-    class __StateObject:
-        def __init__(self):
-            # For now keep content as dict. Idealy this should be changed
-            # later too.
-            self._state = {
-                'disks': [],
-                'internal': {
-                    'disk_ids': {},
-                    'display_name': None,
-                    'ports': [],
-                    'throttling_file': None,
-                    },
-                'failed': False,
-                'throttling': {
-                    'cpu': None,
-                    'network': None,
-                    }
-                }
-            self.daemonize = True
-            self.state_file = None
-            self.v2v_log = None
-            self.machine_readable_log = None
 
-        def __getattr__(self, name):
-            return getattr(self._state, name)
+    __slots__ = [
+        '_state',  # Should be removed later
 
-        def __getitem__(self, key):
-            return self._state[key]
+        'daemonize',
+        'state_file',
+        'v2v_log',
+        'machine_readable_log',
+    ]
 
-        def __setitem__(self, key, value):
-            self._state[key] = value
-
-        def __str__(self):
-            return repr(self._state)
-
-        def write(self):
-            state = self._state.copy()
-            del state['internal']
-            tmp_state = tempfile.mkstemp(
-                suffix='.v2v.state',
-                dir=os.path.dirname(self.state_file))
-            os.fchmod(
-                tmp_state[0],
-                stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH)
-            with os.fdopen(tmp_state[0], 'w') as f:
-                json.dump(state, f)
-            os.rename(tmp_state[1], self.state_file)
-
-    instance = None
+    _hidden = [
+        'daemonize',
+        'state_file',
+        'v2v_log',
+        'machine_readable_log',
+    ]
 
     def __init__(self):
-        if not State.instance:
-            State.instance = State.__StateObject()
+        self.reset()
+
+    def reset(self):
+        """
+        This function exists only so that the singleton can be re-used in tests
+        """
+
+        # For now keep content as dict. Idealy this should be changed
+        # later too.
+        self._state = {
+            'disks': [],
+            'internal': {
+                'disk_ids': {},
+                'display_name': None,
+                'ports': [],
+                'throttling_file': None,
+            },
+            'failed': False,
+            'throttling': {
+                'cpu': None,
+                'network': None,
+            }
+        }
+        self.daemonize = True
+        self.state_file = None
+        self.v2v_log = None
+        self.machine_readable_log = None
 
     def __getattr__(self, name):
-        return getattr(self.instance, name)
+        return getattr(self._state, name)
+
+    def __getitem__(self, key):
+        return self._state[key]
+
+    def __setitem__(self, key, value):
+        self._state[key] = value
+
+    def __str__(self):
+        return repr(self._state)
+
+    def write(self):
+        hidden = ['internal']
+
+        # Ideally this shenanigans will go away after all of the dict is
+        # converted as we should be then able to just json.dumps(self).
+        state = self._state.copy()
+        for key in hidden:
+            del state[key]
+
+        if hasattr(self, '_hidden'):
+            hidden += self._hidden
+        slots = [key for key in self.__slots__
+                 if key not in hidden and not key.startswith('_')]
+        state.update({key: getattr(self, key) for key in slots})
+
+        tmp_state = tempfile.mkstemp(suffix='.v2v.state',
+                                     dir=os.path.dirname(self.state_file))
+        os.fchmod(tmp_state[0],
+                  stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH)
+        with os.fdopen(tmp_state[0], 'w') as f:
+            json.dump(state, f)
+            os.rename(tmp_state[1], self.state_file)
+
+
+STATE = _State()

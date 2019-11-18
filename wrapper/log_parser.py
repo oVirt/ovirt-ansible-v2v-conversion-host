@@ -6,7 +6,7 @@ import time
 import logging
 from contextlib import contextmanager
 
-from .singleton import State
+from .singleton import STATE
 from .common import error
 
 if six.PY2:
@@ -43,7 +43,7 @@ class OutputParser(object):
     SSH_VMX_GUEST_NAME = re.compile(br'^displayName = "(.*)"$')
 
     def __init__(self, duplicate=False):
-        state = State().instance
+        state = STATE
         # Wait for the log files to appear
         for i in range(10):
             if os.path.exists(state.v2v_log) \

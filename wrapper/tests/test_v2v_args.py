@@ -49,7 +49,7 @@ class TestV2vArgs(unittest.TestCase):
     }
 
     def test_vddk_basic(self):
-        state = wrapper.State().instance
+        state = wrapper.STATE
         state.machine_readable_log = '/some/path'
         data = self.VDDK_RHV.copy()
         expected = [
@@ -67,7 +67,7 @@ class TestV2vArgs(unittest.TestCase):
         self.assertEqual(v2v_args, expected)
 
     def test_luks(self):
-        state = wrapper.State().instance
+        state = wrapper.STATE
         state.machine_readable_log = '/some/path'
         data = self.VDDK_RHV.copy()
         data['luks_keys_files'] = [

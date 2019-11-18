@@ -9,11 +9,11 @@ class TestState(unittest.TestCase):
 
     def setUp(self):
         # Destroy any previous state
-        wrapper.State.instance = None
+        wrapper.STATE.reset()
 
     def test_dict(self):
         """ Make sure the access to internal dictionary works """
-        state = wrapper.State().instance
+        state = wrapper.STATE
         self.assertEqual(state['disks'], [])
         self.assertEqual(state['internal']['disk_ids'], {})
         # check -- change -- check
@@ -22,8 +22,8 @@ class TestState(unittest.TestCase):
         self.assertEqual(state['failed'], True)
 
     def test_singleton(self):
-        state1 = wrapper.State().instance
-        state2 = wrapper.State().instance
+        state1 = wrapper.STATE
+        state2 = wrapper.STATE
         # Internal dictionary
         key = 'abcdef'
         value = '123456'
@@ -44,7 +44,7 @@ class TestState(unittest.TestCase):
         self.assertEqual(state2.state_file, value)
 
     def test_write(self):
-        state = wrapper.State().instance
+        state = wrapper.STATE
         self.assertEqual(state.state_file, None)
         state.state_file = tempfile.mkstemp(prefix='vchtest')[1]
         state.write()
@@ -52,7 +52,7 @@ class TestState(unittest.TestCase):
             json.loads(f.read())
 
     def test_write_full(self):
-        state = wrapper.State().instance
+        state = wrapper.STATE
         self.assertEqual(state.state_file, None)
         state.state_file = tempfile.mkstemp(prefix='vchtest')[1]
         state['disks'] = [

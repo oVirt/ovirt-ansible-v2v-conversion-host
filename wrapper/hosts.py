@@ -15,7 +15,7 @@ from six.moves.urllib.parse import urlparse
 
 from .common import error, hard_error, log_command_safe
 from .runners import SubprocessRunner, SystemdRunner
-from .singleton import State
+from .singleton import STATE
 
 
 TIMEOUT = 300
@@ -163,7 +163,7 @@ class CNVHost(BaseHost):
         """ Called to do tasks on progress update """
         # Update POD annotation with progress
         # Just an average now, maybe later we can weight it by disk size
-        state = State().instance
+        state = STATE
         disks = [d['progress'] for d in state['disks']]
         if len(disks) > 0:
             progress = sum(disks)/len(disks)
@@ -275,7 +275,7 @@ class OSPHost(BaseHost):
     TYPE = BaseHost.TYPE_OSP
 
     def create_runner(self, *args, **kwargs):
-        state = State().instance
+        state = STATE
         if state.daemonize:
             return SystemdRunner(self, *args, **kwargs)
         else:
@@ -656,7 +656,7 @@ class VDSMHost(BaseHost):
                 connection.close()
 
     def create_runner(self, *args, **kwargs):
-        state = State().instance
+        state = STATE
         if state.daemonize:
             return SystemdRunner(self, *args, **kwargs)
         else:
