@@ -670,7 +670,7 @@ class VDSMHost(BaseHost):
         with self.sdk_connection(data) as conn:
             disks_service = conn.system_service().disks_service()
             transfers_service = conn.system_service().image_transfers_service()
-            disk_ids = state['internal']['disk_ids'].values()
+            disk_ids = list(state['internal']['disk_ids'].values())
             # First stop all active transfers...
             try:
                 transfers = transfers_service.list()
