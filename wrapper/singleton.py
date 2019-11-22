@@ -21,6 +21,9 @@ class _State(object):
         'state_file',
         'v2v_log',
         'machine_readable_log',
+
+        # These fields are written to the state file
+        'failed',
     ]
 
     _hidden = [
@@ -48,7 +51,6 @@ class _State(object):
                 'ports': [],
                 'throttling_file': None,
             },
-            'failed': False,
             'throttling': {
                 'cpu': None,
                 'network': None,
@@ -58,6 +60,7 @@ class _State(object):
         self.state_file = None
         self.v2v_log = None
         self.machine_readable_log = None
+        self.failed = False
 
     def __getattr__(self, name):
         return getattr(self._state, name)

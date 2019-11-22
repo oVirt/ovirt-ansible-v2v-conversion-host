@@ -247,7 +247,7 @@ def wrapper(host, data, v2v_caps, agent_sock=None):
         runner.run()
     except RuntimeError:
         error('Failed to start virt-v2v', exception=True)
-        STATE['failed'] = True
+        STATE.failed = True
         STATE.write()
         return
     STATE['pid'] = runner.pid
@@ -269,7 +269,7 @@ def wrapper(host, data, v2v_caps, agent_sock=None):
                 runner.return_code)
             parser.parse()
     except Exception:
-        STATE['failed'] = True
+        STATE.failed = True
         error('Error while monitoring virt-v2v', exception=True)
         logging.info('Killing virt-v2v process')
         runner.kill()
@@ -278,7 +278,7 @@ def wrapper(host, data, v2v_caps, agent_sock=None):
     STATE.write()
 
     if STATE['return_code'] != 0:
-        STATE['failed'] = True
+        STATE.failed = True
     STATE.write()
 
 
@@ -564,18 +564,18 @@ def main():
             wrapper(host, data, virt_v2v_caps, agent_sock)
             if agent_pid is not None:
                 os.kill(agent_pid, signal.SIGTERM)
-            if not STATE.get('failed', False):
-                STATE['failed'] = not host.handle_finish(data)
+            if not STATE.failed:
+                STATE.failed = not host.handle_finish(data)
         except Exception as e:
             # No need to log the exception, it will get logged below
             error(e.args[0],
                   'An error occured, finishing state file...',
                   exception=True)
-            STATE['failed'] = True
+            STATE.failed = True
             STATE.write()
             raise
         finally:
-            if STATE.get('failed', False):
+            if STATE.failed:
                 # Perform cleanup after failed conversion
                 logging.debug('Cleanup phase')
                 try:
@@ -612,7 +612,7 @@ def main():
         raise
 
     logging.info('Finished')
-    if STATE['failed']:
+    if STATE.failed:
         sys.exit(2)
 
 

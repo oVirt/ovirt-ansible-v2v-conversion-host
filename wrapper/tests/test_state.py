@@ -16,9 +16,9 @@ class TestState(unittest.TestCase):
         self.assertEqual(STATE['disks'], [])
         self.assertEqual(STATE['internal']['disk_ids'], {})
         # check -- change -- check
-        self.assertEqual(STATE['failed'], False)
-        STATE['failed'] = True
-        self.assertEqual(STATE['failed'], True)
+        self.assertEqual(STATE.failed, False)
+        STATE.failed = True
+        self.assertEqual(STATE.failed, True)
 
     def test_singleton(self):
         state1 = STATE
