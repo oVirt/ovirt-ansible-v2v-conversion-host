@@ -31,7 +31,7 @@ import six
 import tempfile
 import time
 
-from .singleton import STATE
+from .singleton import STATE, Disk
 from .common import error, hard_error, log_command_safe
 from .hosts import BaseHost, CNVHost
 from .runners import SystemdRunner
@@ -525,9 +525,7 @@ def main():
                 logging.debug('Initializing disk list from %r',
                               data['source_disks'])
                 for d in data['source_disks']:
-                    STATE['disks'].append({
-                        'path': d,
-                        'progress': 0})
+                    STATE['disks'].append(Disk(d, 0))
                 logging.debug('Internal disk list: %r', STATE['disks'])
                 STATE['disk_count'] = len(data['source_disks'])
             # Create state file before dumping the JSON

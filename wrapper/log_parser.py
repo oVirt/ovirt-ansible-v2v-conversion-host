@@ -6,7 +6,7 @@ import time
 import logging
 from contextlib import contextmanager
 
-from .singleton import STATE
+from .singleton import STATE, Disk
 from .common import error
 
 if six.PY2:
@@ -143,7 +143,7 @@ class OutputParser(object):
             if self._current_path is not None and \
                     self._current_disk is not None:
                 try:
-                    STATE['disks'][self._current_disk]['progress'] = \
+                    STATE['disks'][self._current_disk].progress = \
                         float(m.group(1))
                     logging.debug('Updated progress: %s', m.group(1))
                 except ValueError:
@@ -156,7 +156,7 @@ class OutputParser(object):
 
         m = self.RHV_DISK_UUID.match(line)
         if m is not None:
-            path = STATE['disks'][self._current_disk]['path']
+            path = STATE['disks'][self._current_disk].path
             disk_id = m.group('uuid')
             STATE['internal']['disk_ids'][path] = disk_id
             logging.debug('Path \'%s\' has disk id=\'%s\'', path, disk_id)
@@ -196,7 +196,7 @@ class OutputParser(object):
 
         # NOTE: We assume that _current_disk is monotonic
         for i in xrange(self._current_disk, len(STATE['disks'])):
-            if STATE['disks'][i]['path'] == self._current_path:
+            if STATE['disks'][i].path == self._current_path:
                 if i == self._current_disk:
                     # We have correct index
                     logging.debug('Found path at correct index')
@@ -211,12 +211,7 @@ class OutputParser(object):
         # Path not found
         logging.debug('Path \'%s\' not found in %r', self._current_path,
                       STATE['disks'])
-        STATE['disks'].insert(
-            self._current_disk,
-            {
-                'path': self._current_path,
-                'progress': 0,
-            })
+        STATE['disks'].insert(self._current_disk, Disk(self._current_path, 0))
 
 
 @contextmanager

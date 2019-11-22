@@ -21,6 +21,21 @@ class _StateEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
+class Disk(_StateObject):
+    """
+    Represents one disk instance (to be) copied.
+    """
+
+    __slots__ = [
+        'path',
+        'progress',
+    ]
+
+    def __init__(self, path, progress=0.0):
+        self.path = path
+        self.progress = progress
+
+
 class _State(object):
     """
     State object using a dict for data storage.
