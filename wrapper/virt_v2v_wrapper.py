@@ -259,7 +259,7 @@ def wrapper(host, data, v2v_caps, agent_sock=None):
         STATE.write()
         with log_parser(isinstance(host, CNVHost)) as parser:
             while runner.is_running():
-                parser.parse(STATE)
+                parser.parse()
                 STATE.write()
                 host.update_progress()
                 throttling_update(runner)
@@ -267,7 +267,7 @@ def wrapper(host, data, v2v_caps, agent_sock=None):
             logging.info(
                 'virt-v2v terminated with return code %d',
                 runner.return_code)
-            parser.parse(STATE)
+            parser.parse()
     except Exception:
         STATE['failed'] = True
         error('Error while monitoring virt-v2v', exception=True)
@@ -565,7 +565,7 @@ def main():
             if agent_pid is not None:
                 os.kill(agent_pid, signal.SIGTERM)
             if not STATE.get('failed', False):
-                STATE['failed'] = not host.handle_finish(data, STATE)
+                STATE['failed'] = not host.handle_finish(data)
         except Exception as e:
             # No need to log the exception, it will get logged below
             error(e.args[0],

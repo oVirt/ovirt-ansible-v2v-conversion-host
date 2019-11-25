@@ -85,11 +85,11 @@ class BaseHost(object):
     def get_tag(self):
         return self._tag
 
-    def handle_cleanup(self, data, state):
+    def handle_cleanup(self, data):
         """ Handle cleanup after failed conversion """
         pass
 
-    def handle_finish(self, data, state):
+    def handle_finish(self, data):
         """ Handle finish after successfull conversion """
         return True
 
@@ -133,7 +133,7 @@ class CNVHost(BaseHost):
         # collector
         return ('/tmp', '/tmp')
 
-    def handle_finish(self, data, state):
+    def handle_finish(self, data):
         """ Handle finish after successfull conversion """
         # Store JSON into annotation
         with open('/data/vm/{}.json'.format(data['vm_name']), 'rb') as f:
@@ -663,7 +663,7 @@ class VDSMHost(BaseHost):
         """ Returns tuple with directory for virt-v2v log and wrapper log """
         return (self.VDSM_LOG_DIR, self.VDSM_LOG_DIR)
 
-    def handle_cleanup(self, data, state):
+    def handle_cleanup(self, data):
         with self.sdk_connection(data) as conn:
             disks_service = conn.system_service().disks_service()
             transfers_service = conn.system_service().image_transfers_service()

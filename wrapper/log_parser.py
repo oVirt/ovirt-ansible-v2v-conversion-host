@@ -59,7 +59,7 @@ class OutputParser(object):
         self._log.close()
         self._machine_log.close()
 
-    def parse(self, state):
+    def parse(self):
         line = self._machine_log.readline()
         while line != b'':
             try:
@@ -77,10 +77,10 @@ class OutputParser(object):
         while line != b'':
             if self._duplicate:
                 logging.debug('%r', line)
-            self.parse_line(state, line)
+            self.parse_line(line)
             line = self._log.readline()
 
-    def parse_line(self, state, line):
+    def parse_line(self, line):
         m = self.COPY_DISK_RE.match(line)
         if m is not None:
             try:
@@ -107,7 +107,7 @@ class OutputParser(object):
             self._current_path = m.group(1).decode('utf-8')
             if self._current_disk is not None:
                 logging.info('Copying path: %s', self._current_path)
-                self._locate_disk(state)
+                self._locate_disk()
 
         # SSH (all outputs)
         m = self.SSH_VMX_GUEST_NAME.match(line)
@@ -125,7 +125,7 @@ class OutputParser(object):
                 br'[\g<store>] \g<vm>/\g<disk>.vmdk', path).decode('utf-8')
             if self._current_disk is not None:
                 logging.info('Copying path: %s', self._current_path)
-                self._locate_disk(state)
+                self._locate_disk()
 
         # SSH + OpenStack
         m = self.OVERLAY_SOURCE2_RE.match(line)
@@ -136,7 +136,7 @@ class OutputParser(object):
                 br'[\g<store>] \g<vm>/\g<disk>.vmdk', path).decode('utf-8')
             if self._current_disk is not None:
                 logging.info('Copying path: %s', self._current_path)
-                self._locate_disk(state)
+                self._locate_disk()
 
         m = self.DISK_PROGRESS_RE.match(line)
         if m is not None:
@@ -189,7 +189,7 @@ class OutputParser(object):
     def close(self):
         self._log.close()
 
-    def _locate_disk(self, state):
+    def _locate_disk(self):
         if self._current_disk is None:
             # False alarm, not copying yet
             return

@@ -20,9 +20,7 @@ class TestOutputParser(unittest.TestCase):
                 {'path': '[store1] path2.vmdk'},
                 {'path': '[store1] path3.vmdk'},
                 ]
-            parser.parse_line(
-                STATE,
-                b'Copying disk 2/3 to /some/path')
+            parser.parse_line(b'Copying disk 2/3 to /some/path')
             self.assertEqual(parser._current_disk, 1)
             self.assertIsNone(parser._current_path)
             self.assertEqual(STATE['disk_count'], 3)
@@ -38,7 +36,7 @@ class TestOutputParser(unittest.TestCase):
                 {'path': '[store1] path1.vmdk'},
                 {'path': '[store1] path3.vmdk'},
                 ]
-            parser._locate_disk(STATE)
+            parser._locate_disk()
             self.assertEqual(STATE['disks'][0]['path'], '[store1] path1.vmdk')
             self.assertEqual(STATE['disks'][1]['path'], '[store1] path2.vmdk')
             self.assertEqual(STATE['disks'][2]['path'], '[store1] path3.vmdk')
@@ -53,9 +51,7 @@ class TestOutputParser(unittest.TestCase):
                 'path': '/path1',
                 'progress': 0.0,
                 }]
-            parser.parse_line(
-                STATE,
-                b'  (10.42/100%)')
+            parser.parse_line(b'  (10.42/100%)')
             self.assertEqual(STATE['disks'][0]['progress'], 10.42)
 
     # TODO
@@ -63,7 +59,6 @@ class TestOutputParser(unittest.TestCase):
     #     with wrapper.log_parser('/dev/null') as parser:
     #         state = {}
     #         state = parser.parse_line(
-    #             STATE,
     #             b'  overlay source qemu URI: nbd:unix:/var/tmp/vddk.Iwg7XW/nbdkit1.sock:exportname=/')  # NOQA
     #         self.assertEqual(parser._current_path, '[store1] /path1.vmdk')
 
@@ -72,7 +67,6 @@ class TestOutputParser(unittest.TestCase):
         STATE.machine_readable_log = '/dev/null'
         with wrapper.log_parser() as parser:
             parser.parse_line(
-                STATE,
                 b'nbdkit: debug: Opening file [store1] /path1.vmdk (ha-nfcssl://[store1] path1.vmdk@1.2.3.4:902)')  # NOQA
             self.assertEqual(parser._current_path, '[store1] /path1.vmdk')
 
@@ -84,7 +78,6 @@ class TestOutputParser(unittest.TestCase):
             path = '/path1'
             STATE['disks'] = [{'path': path}]
             parser.parse_line(
-                STATE,
                 b'disk.id = \'11111111-1111-1111-1111-111111111111\'')
             self.assertIn(path, STATE['internal']['disk_ids'])
             self.assertEqual(
@@ -100,7 +93,7 @@ class TestOutputParser(unittest.TestCase):
                     br"openstack '--os-username=admin' '--os-identity-api-version=3' '--os-user-domain-name=Default' '--os-auth-url=http://10.19.2.25:5000//v3' '--os-volume-api-version=3' '--os-project-domain-name=Default' '--os-project-name=admin' '--os-password=100Root-' 'volume' 'show' '-f' 'json' 'd85b7a6f-bffa-4b77-93df-912afd6e7014'",  # NOQA
                     ]
             for l in lines:
-                parser.parse_line(STATE, l)
+                parser.parse_line(l)
             self.assertIn(1, STATE['internal']['disk_ids'])
             self.assertIn(2, STATE['internal']['disk_ids'])
             self.assertEqual(
