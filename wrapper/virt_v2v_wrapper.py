@@ -440,7 +440,7 @@ def main():
         if 'transport_method' not in data:
             hard_error('No transport method specified')
         if data['transport_method'] not in ('ssh', 'vddk'):
-            hard_error('Unknown transport method: %s',
+            hard_error('Unknown transport method: %s' %
                        data['transport_method'])
 
         if data['transport_method'] == 'vddk':
