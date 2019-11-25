@@ -32,19 +32,11 @@ class TcController(object):
         return '0x{:04x}{:04x}'.format(major, minor)
 
     def __init__(self, tag, uid, gid):
-        self._cgroup = 'v2v-conversion/%s' % tag
-        self._class_id = None
+        self.cgroup = 'v2v-conversion/%s' % tag
+        self.class_id = None
         self._interfaces = []
         self._owner = (uid, gid)
         self._prepare()
-
-    @property
-    def class_id(self):
-        return self._class_id
-
-    @property
-    def cgroup(self):
-        return self._cgroup
 
     def set_limit(self, limit):
         if limit is None or limit == 'unlimited':
@@ -53,7 +45,7 @@ class TcController(object):
         for iface in self._interfaces:
             if self._run_tc([
                     'class', 'change', 'dev', iface,
-                    'classid', self._class_id, 'htb',
+                    'classid', self.class_id, 'htb',
                     'rate',  '{}bps'.format(limit),
                     ]) is None:
                 ret = False
@@ -71,10 +63,10 @@ class TcController(object):
         self._prepare_cgroup()
 
     def _prepare_cgroup(self):
-        logging.info('Preparing net_cls cgroup %s', self._cgroup)
+        logging.info('Preparing net_cls cgroup %s', self.cgroup)
         # Create cgroup -- we do this even when tc is not properly set
         # otherwise cgexec would fail
-        cgroup_dir = '/sys/fs/cgroup/net_cls/%s' % self._cgroup
+        cgroup_dir = '/sys/fs/cgroup/net_cls/%s' % self.cgroup
         atexit_command(['/usr/bin/rmdir', '-p', cgroup_dir])
         os.makedirs(cgroup_dir)
         # Change ownership of 'tasks' file so cgexec can write into it
@@ -82,9 +74,9 @@ class TcController(object):
             os.path.join(cgroup_dir, 'tasks'),
             self._owner[0], self._owner[1])
         # Store class ID
-        if self._class_id is not None:
+        if self.class_id is not None:
             with open(os.path.join(cgroup_dir, 'net_cls.classid'), 'w') as f:
-                f.write(TcController.class_id_to_hex(self._class_id))
+                f.write(TcController.class_id_to_hex(self.class_id))
         else:
             logging.info(
                 'Not assigning class ID to net_cls cgroup'
@@ -132,7 +124,7 @@ class TcController(object):
 
     def _create_class(self, handle, iface):
         # If there is no class ID assigned yet, try to find first free
-        if self._class_id is None:
+        if self.class_id is None:
             # First list existing classes
             classes = self._run_tc([
                 'class', 'show', 'dev', iface, 'parent', handle])
@@ -158,7 +150,7 @@ class TcController(object):
                 return False
         else:
             # We already chose ID before
-            new_id = self._class_id
+            new_id = self.class_id
         # Create new class
         logging.info('Creating new tc class on %s with class ID: %s',
                      iface, new_id)
@@ -170,7 +162,7 @@ class TcController(object):
             logging.error('Failed to create tc class')
             return False
         atexit_command(['tc', 'class', 'del', 'dev', iface, 'classid', new_id])
-        self._class_id = new_id
+        self.class_id = new_id
         return True
 
     def _create_filter(self, handle, iface):

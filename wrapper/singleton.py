@@ -46,15 +46,6 @@ class State(object):
         def __str__(self):
             return repr(self._state)
 
-        # def get_filename(self):
-        #     return self._filename
-
-        # def set_filename(self, name):
-        #     self._filename = name
-
-        # FIXME: property attributes (property()/@property) don't work properly
-        # filename = property(get_filename, set_filename)
-
         def write(self):
             state = self._state.copy()
             del state['internal']

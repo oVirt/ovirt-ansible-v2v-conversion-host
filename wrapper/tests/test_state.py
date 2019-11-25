@@ -21,16 +21,6 @@ class TestState(unittest.TestCase):
         state['failed'] = True
         self.assertEqual(state['failed'], True)
 
-    # def test_property(self):
-    #     state = wrapper.State().instance
-    #     self.assertEqual(state.state_file, None)
-    #     value = '/some/path'
-    #     state.state_file = value
-    #     self.assertEqual(state.state_file, value)
-    #  FIXME: property attributes (property()/@property) don't work properly
-    #  with the __StateObject
-    #     self.assertEqual(state._filename, value)
-
     def test_singleton(self):
         state1 = wrapper.State().instance
         state2 = wrapper.State().instance
