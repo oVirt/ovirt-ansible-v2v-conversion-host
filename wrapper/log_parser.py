@@ -78,9 +78,8 @@ class OutputParser(object):
         while line != b'':
             if self._duplicate:
                 logging.debug('%r', line)
-            state = self.parse_line(state, line)
+            self.parse_line(state, line)
             line = self._log.readline()
-        return state
 
     def parse_line(self, state, line):
         m = self.COPY_DISK_RE.match(line)
@@ -187,8 +186,6 @@ class OutputParser(object):
             vm_id = m.group('uuid').decode('utf-8')
             state['vm_id'] = vm_id
             logging.info('Created VM with id=%s', vm_id)
-
-        return state
 
     def close(self):
         self._log.close()
