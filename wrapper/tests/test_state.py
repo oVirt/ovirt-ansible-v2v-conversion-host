@@ -56,8 +56,7 @@ class TestState(unittest.TestCase):
             {'path': '/some/path', 'progress': 12.34},
             {'path': '/some/other/path', 'progress': 0}
         ]
-        # TODO: This can happen and it fails, so it needs to be fixed
-        # STATE['last_message'] = b'Byte data being saved'
+        STATE['last_message'] = b'Byte data being saved'
         STATE.write()
         with open(STATE.state_file, 'rb') as f:
             json.loads(f.read())

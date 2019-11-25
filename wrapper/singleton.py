@@ -4,6 +4,23 @@ import json
 import stat
 
 
+class _StateObject(object):
+    pass
+
+
+class _StateEncoder(json.JSONEncoder):
+    def default(self, obj):  # pylint: disable=method-hidden
+        if isinstance(obj, bytes):
+            return obj.decode()
+        if isinstance(obj, _StateObject):
+            hidden = ['internal']
+            if hasattr(obj, '_hidden'):
+                hidden += obj._hidden
+            slots = [key for key in obj.__slots__ if key not in hidden]
+            return {key: getattr(obj, key) for key in slots}
+        return json.JSONEncoder.default(self, obj)
+
+
 class _State(object):
     """
     State object using a dict for data storage.
@@ -94,7 +111,7 @@ class _State(object):
         os.fchmod(tmp_state[0],
                   stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH)
         with os.fdopen(tmp_state[0], 'w') as f:
-            json.dump(state, f)
+            json.dump(state, f, cls=_StateEncoder)
             os.rename(tmp_state[1], self.state_file)
 
 
