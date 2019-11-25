@@ -17,8 +17,13 @@ def check_rhv_guest_tools():
 
 
 def check_rhv_version():
-    import rpmUtils.transaction
-    import rpmUtils.miscutils
+    try:
+        import rpmUtils.transaction
+        import rpmUtils.miscutils
+    except ImportError:
+        # TODO: use dnf
+        print('No rpmUtils package, cannot probe vdsm versions')
+        return False
 
     ts = rpmUtils.transaction.initReadOnlyTransaction()
     match = ts.dbMatch('name', 'vdsm')
