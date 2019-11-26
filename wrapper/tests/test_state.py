@@ -1,11 +1,11 @@
 import json
 import tempfile
 import unittest
-from wrapper.singleton import STATE, Disk
+from wrapper.state import STATE, Disk
 
 
 class TestState(unittest.TestCase):
-    """ Tests state object, make sure it it singleton """
+    """ Tests state object, make sure it it state """
 
     def setUp(self):
         # Destroy any previous state
@@ -20,7 +20,7 @@ class TestState(unittest.TestCase):
         STATE.failed = True
         self.assertEqual(STATE.failed, True)
 
-    def test_singleton(self):
+    def test_state(self):
         state1 = STATE
         state2 = STATE
         # Internal dictionary

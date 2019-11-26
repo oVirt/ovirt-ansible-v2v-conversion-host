@@ -1,6 +1,6 @@
 import unittest
 from wrapper import virt_v2v_wrapper as wrapper
-from wrapper.singleton import STATE
+from wrapper.state import STATE
 
 
 class TestV2vArgs(unittest.TestCase):

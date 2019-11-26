@@ -31,7 +31,7 @@ import six
 import tempfile
 import time
 
-from .singleton import STATE, Disk
+from .state import STATE, Disk
 from .common import error, hard_error, log_command_safe
 from .hosts import BaseHost, CNVHost
 from .runners import SystemdRunner

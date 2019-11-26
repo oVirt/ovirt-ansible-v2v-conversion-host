@@ -6,7 +6,7 @@ import time
 import logging
 from contextlib import contextmanager
 
-from .singleton import STATE, Disk
+from .state import STATE, Disk
 from .common import error
 
 if six.PY2:

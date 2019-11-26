@@ -15,7 +15,7 @@ from six.moves.urllib.parse import urlparse
 
 from .common import error, hard_error, log_command_safe
 from .runners import SubprocessRunner, SystemdRunner
-from .singleton import STATE
+from .state import STATE
 
 
 TIMEOUT = 300

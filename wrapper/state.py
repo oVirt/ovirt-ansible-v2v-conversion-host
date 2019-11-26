@@ -70,7 +70,7 @@ class _State(object):
 
     def reset(self):
         """
-        This function exists only so that the singleton can be re-used in tests
+        This function exists only so that the state can be re-used in tests
         """
 
         # For now keep content as dict. Idealy this should be changed

@@ -6,7 +6,7 @@ import six
 import subprocess
 import sys
 
-from .singleton import STATE
+from .state import STATE
 
 if six.PY3:
     xrange = range
