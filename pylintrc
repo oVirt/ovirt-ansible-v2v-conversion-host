@@ -1,0 +1,43 @@
+[MASTER]
+# Use multiple processes to speed up Pylint.  It saves only couple of 6 seconds,
+# but the only thing it cannot fetch is duplicate-code, which was mostly
+# false-positive at the time of writing this
+jobs=0
+
+persistent=no
+suggestion-mode=yes
+extension-pkg-whitelist=pycurl
+
+[MESSAGES CONTROL]
+disable=arguments-differ,
+        attribute-defined-outside-init,
+        bad-continuation,
+        bad-whitespace,
+        broad-except,
+        consider-iterating-dictionary,
+        deprecated-method,
+        duplicate-except,
+        fixme,
+        import-outside-toplevel,
+        invalid-name,
+        len-as-condition,
+        logging-not-lazy,
+        missing-docstring,
+        no-else-return,
+        no-self-use,
+        superfluous-parens,
+        too-few-public-methods,
+        too-many-branches,
+        too-many-instance-attributes,
+        too-many-locals,
+        too-many-return-statements,
+        too-many-statements,
+        unnecessary-pass,
+        unused-argument,
+        unused-variable,
+        useless-object-inheritance, # Wait for python2 deprecation
+        wrong-import-order
+
+[REPORTS]
+output-format=colorized
+score=no
