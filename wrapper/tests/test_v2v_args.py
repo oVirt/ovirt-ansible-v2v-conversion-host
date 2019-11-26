@@ -1,5 +1,6 @@
 import unittest
 from wrapper import virt_v2v_wrapper as wrapper
+from wrapper.singleton import STATE
 
 
 class TestV2vArgs(unittest.TestCase):
@@ -49,8 +50,7 @@ class TestV2vArgs(unittest.TestCase):
     }
 
     def test_vddk_basic(self):
-        state = wrapper.STATE
-        state.machine_readable_log = '/some/path'
+        STATE.machine_readable_log = '/some/path'
         data = self.VDDK_RHV.copy()
         expected = [
             '-v', '-x', 'My Virtual',
@@ -67,8 +67,7 @@ class TestV2vArgs(unittest.TestCase):
         self.assertEqual(v2v_args, expected)
 
     def test_luks(self):
-        state = wrapper.STATE
-        state.machine_readable_log = '/some/path'
+        STATE.machine_readable_log = '/some/path'
         data = self.VDDK_RHV.copy()
         data['luks_keys_files'] = [
             {

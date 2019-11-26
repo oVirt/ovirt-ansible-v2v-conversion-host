@@ -92,12 +92,11 @@ def daemonize():
 
 
 def prepare_command(data, v2v_caps, agent_sock=None):
-    state = STATE
     v2v_args = [
         '-v', '-x',
         data['vm_name'],
         '--root', 'first',
-        '--machine-readable=file:{}'.format(state.machine_readable_log),
+        '--machine-readable=file:{}'.format(STATE.machine_readable_log),
     ]
 
     if data['transport_method'] == 'vddk':
@@ -152,17 +151,16 @@ def prepare_command(data, v2v_caps, agent_sock=None):
 
 def throttling_update(runner, initial=None):
     """ Update throttling """
-    state = STATE
     if initial is not None:
         throttling = initial
     else:
         # Read from throttling file
         try:
-            with open(state['internal']['throttling_file']) as f:
+            with open(STATE['internal']['throttling_file']) as f:
                 throttling = json.load(f)
             # Remove file when finished to prevent spamming logs with repeated
             # messages
-            os.remove(state['internal']['throttling_file'])
+            os.remove(STATE['internal']['throttling_file'])
             logging.info('Fetched updated throttling info from file')
         except IOError as e:
             if e.errno != errno.ENOENT:
@@ -197,7 +195,7 @@ def throttling_update(runner, initial=None):
                         'Failed to parse value for CPU limit',
                         'Failed to parse value for CPU limit: %s', v)
                     continue
-            if val != state['throttling']['cpu'] and \
+            if val != STATE['throttling']['cpu'] and \
                     runner.systemd_set_property('CPUQuota', set_val):
                 processed[k] = val
             else:
@@ -219,11 +217,11 @@ def throttling_update(runner, initial=None):
                         'Failed to parse value for network limit',
                         'Failed to parse value for network limit: %s', v)
                     continue
-            if val != state['throttling']['network'] and \
+            if val != STATE['throttling']['network'] and \
                     runner.set_network_limit(set_val):
                 logging.debug(
                     'Changing network throttling to %s (previous: %s)',
-                    val, state['throttling']['network'])
+                    val, STATE['throttling']['network'])
                 processed[k] = val
             else:
                 error(
@@ -231,13 +229,12 @@ def throttling_update(runner, initial=None):
                     'Failed to set network limit to %s', val)
         else:
             logging.debug('Ignoring unknown throttling request: %s', k)
-    state['throttling'].update(processed)
-    logging.info('New throttling setup: %r', state['throttling'])
+    STATE['throttling'].update(processed)
+    logging.info('New throttling setup: %r', STATE['throttling'])
 
 
 def wrapper(host, data, v2v_caps, agent_sock=None):
 
-    state = STATE
     v2v_args, v2v_env = prepare_command(data, v2v_caps, agent_sock)
     v2v_args, v2v_env = host.prepare_command(
         data, v2v_args, v2v_env, v2v_caps)
@@ -245,44 +242,44 @@ def wrapper(host, data, v2v_caps, agent_sock=None):
     logging.info('Starting virt-v2v:')
     log_command_safe(v2v_args, v2v_env)
 
-    runner = host.create_runner(v2v_args, v2v_env, state.v2v_log)
+    runner = host.create_runner(v2v_args, v2v_env, STATE.v2v_log)
     try:
         runner.run()
     except RuntimeError:
         error('Failed to start virt-v2v', exception=True)
-        state['failed'] = True
-        state.write()
+        STATE['failed'] = True
+        STATE.write()
         return
-    state['pid'] = runner.pid
+    STATE['pid'] = runner.pid
     if 'throttling' in data:
         throttling_update(runner, data['throttling'])
 
     try:
-        state['started'] = True
-        state.write()
+        STATE['started'] = True
+        STATE.write()
         with log_parser(isinstance(host, CNVHost)) as parser:
             while runner.is_running():
-                parser.parse(state)
-                state.write()
+                parser.parse(STATE)
+                STATE.write()
                 host.update_progress()
                 throttling_update(runner)
                 time.sleep(5)
             logging.info(
                 'virt-v2v terminated with return code %d',
                 runner.return_code)
-            parser.parse(state)
+            parser.parse(STATE)
     except Exception:
-        state['failed'] = True
+        STATE['failed'] = True
         error('Error while monitoring virt-v2v', exception=True)
         logging.info('Killing virt-v2v process')
         runner.kill()
 
-    state['return_code'] = runner.return_code
-    state.write()
+    STATE['return_code'] = runner.return_code
+    STATE.write()
 
-    if state['return_code'] != 0:
-        state['failed'] = True
-    state.write()
+    if STATE['return_code'] != 0:
+        STATE['failed'] = True
+    STATE.write()
 
 
 def write_password(password, password_files, uid, gid):
@@ -380,16 +377,14 @@ def main():
             print('virt-v2v-wrapper %s' % VERSION)
             sys.exit(0)
 
-    state = STATE
-
     # Read and parse input -- hopefully this should be safe to do as root
     data = json.load(sys.stdin)
 
     # Fill in defaults
     if 'daemonize' not in data:
-        data['daemonize'] = state.daemonize
+        data['daemonize'] = STATE.daemonize
     else:
-        state.daemonize = data['daemonize']
+        STATE.daemonize = data['daemonize']
 
     host_type = BaseHost.detect(data)
     host = BaseHost.factory(host_type)
@@ -398,15 +393,15 @@ def main():
     # Otherwise we would have two logs.
     log_tag = host.get_tag()
     log_dirs = host.get_logs()
-    state.v2v_log = os.path.join(log_dirs[0], 'v2v-import-%s.log' % log_tag)
-    state.machine_readable_log = os.path.join(
+    STATE.v2v_log = os.path.join(log_dirs[0], 'v2v-import-%s.log' % log_tag)
+    STATE.machine_readable_log = os.path.join(
         log_dirs[0], 'v2v-import-%s-mr.log' % log_tag)
     wrapper_log = os.path.join(log_dirs[1],
                                'v2v-import-%s-wrapper.log' % log_tag)
-    state.state_file = os.path.join(STATE_DIR, 'v2v-import-%s.state' % log_tag)
+    STATE.state_file = os.path.join(STATE_DIR, 'v2v-import-%s.state' % log_tag)
     throttling_file = os.path.join(STATE_DIR,
                                    'v2v-import-%s.throttle' % log_tag)
-    state['internal']['throttling_file'] = throttling_file
+    STATE['internal']['throttling_file'] = throttling_file
 
     log_format = '%(asctime)s:%(levelname)s:' \
         + ' %(message)s (%(module)s:%(lineno)d)'
@@ -417,8 +412,8 @@ def main():
 
     logging.info('Wrapper version %s, uid=%d', VERSION, os.getuid())
 
-    logging.info('Will store virt-v2v log in: %s', state.v2v_log)
-    logging.info('Will store state file in: %s', state.state_file)
+    logging.info('Will store virt-v2v log in: %s', STATE.v2v_log)
+    logging.info('Will store state file in: %s', STATE.state_file)
     logging.info('Will read throttling limits from: %s', throttling_file)
 
     password_files = []
@@ -530,19 +525,19 @@ def main():
                 logging.debug('Initializing disk list from %r',
                               data['source_disks'])
                 for d in data['source_disks']:
-                    state['disks'].append({
+                    STATE['disks'].append({
                         'path': d,
                         'progress': 0})
-                logging.debug('Internal disk list: %r', state['disks'])
-                state['disk_count'] = len(data['source_disks'])
+                logging.debug('Internal disk list: %r', STATE['disks'])
+                STATE['disk_count'] = len(data['source_disks'])
             # Create state file before dumping the JSON
-            state.write()
+            STATE.write()
 
             # Send some useful info on stdout in JSON
             print(json.dumps({
-                'v2v_log': state.v2v_log,
+                'v2v_log': STATE.v2v_log,
                 'wrapper_log': wrapper_log,
-                'state_file': state.state_file,
+                'state_file': STATE.state_file,
                 'throttling_file': throttling_file,
             }))
 
@@ -569,25 +564,25 @@ def main():
             wrapper(host, data, virt_v2v_caps, agent_sock)
             if agent_pid is not None:
                 os.kill(agent_pid, signal.SIGTERM)
-            if not state.get('failed', False):
-                state['failed'] = not host.handle_finish(data, state)
+            if not STATE.get('failed', False):
+                STATE['failed'] = not host.handle_finish(data, STATE)
         except Exception as e:
             # No need to log the exception, it will get logged below
             error(e.args[0],
                   'An error occured, finishing state file...',
                   exception=True)
-            state['failed'] = True
-            state.write()
+            STATE['failed'] = True
+            STATE.write()
             raise
         finally:
-            if state.get('failed', False):
+            if STATE.get('failed', False):
                 # Perform cleanup after failed conversion
                 logging.debug('Cleanup phase')
                 try:
-                    host.handle_cleanup(data, state)
+                    host.handle_cleanup(data)
                 finally:
-                    state['finished'] = True
-                    state.write()
+                    STATE['finished'] = True
+                    STATE.write()
 
         # Remove password files
         logging.info('Removing password files')
@@ -599,8 +594,8 @@ def main():
                       'Error removing password file: %s' % f,
                       exception=True)
 
-        state['finished'] = True
-        state.write()
+        STATE['finished'] = True
+        STATE.write()
 
     except Exception:
         logging.exception('Wrapper failure')
@@ -617,7 +612,7 @@ def main():
         raise
 
     logging.info('Finished')
-    if state['failed']:
+    if STATE['failed']:
         sys.exit(2)
 
 

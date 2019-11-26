@@ -1,7 +1,7 @@
 import json
 import tempfile
 import unittest
-from wrapper import virt_v2v_wrapper as wrapper
+from wrapper.singleton import STATE
 
 
 class TestState(unittest.TestCase):
@@ -9,21 +9,20 @@ class TestState(unittest.TestCase):
 
     def setUp(self):
         # Destroy any previous state
-        wrapper.STATE.reset()
+        STATE.reset()
 
     def test_dict(self):
         """ Make sure the access to internal dictionary works """
-        state = wrapper.STATE
-        self.assertEqual(state['disks'], [])
-        self.assertEqual(state['internal']['disk_ids'], {})
+        self.assertEqual(STATE['disks'], [])
+        self.assertEqual(STATE['internal']['disk_ids'], {})
         # check -- change -- check
-        self.assertEqual(state['failed'], False)
-        state['failed'] = True
-        self.assertEqual(state['failed'], True)
+        self.assertEqual(STATE['failed'], False)
+        STATE['failed'] = True
+        self.assertEqual(STATE['failed'], True)
 
     def test_singleton(self):
-        state1 = wrapper.STATE
-        state2 = wrapper.STATE
+        state1 = STATE
+        state2 = STATE
         # Internal dictionary
         key = 'abcdef'
         value = '123456'
@@ -44,23 +43,21 @@ class TestState(unittest.TestCase):
         self.assertEqual(state2.state_file, value)
 
     def test_write(self):
-        state = wrapper.STATE
-        self.assertEqual(state.state_file, None)
-        state.state_file = tempfile.mkstemp(prefix='vchtest')[1]
-        state.write()
-        with open(state.state_file, 'rb') as f:
+        self.assertEqual(STATE.state_file, None)
+        STATE.state_file = tempfile.mkstemp(prefix='vchtest')[1]
+        STATE.write()
+        with open(STATE.state_file, 'rb') as f:
             json.loads(f.read())
 
     def test_write_full(self):
-        state = wrapper.STATE
-        self.assertEqual(state.state_file, None)
-        state.state_file = tempfile.mkstemp(prefix='vchtest')[1]
-        state['disks'] = [
+        self.assertEqual(STATE.state_file, None)
+        STATE.state_file = tempfile.mkstemp(prefix='vchtest')[1]
+        STATE['disks'] = [
             {'path': '/some/path', 'progress': 12.34},
             {'path': '/some/other/path', 'progress': 0}
         ]
         # TODO: This can happen and it fails, so it needs to be fixed
-        # state['last_message'] = b'Byte data being saved'
-        state.write()
-        with open(state.state_file, 'rb') as f:
+        # STATE['last_message'] = b'Byte data being saved'
+        STATE.write()
+        with open(STATE.state_file, 'rb') as f:
             json.loads(f.read())

@@ -43,15 +43,14 @@ class OutputParser(object):
     SSH_VMX_GUEST_NAME = re.compile(br'^displayName = "(.*)"$')
 
     def __init__(self, duplicate=False):
-        state = STATE
         # Wait for the log files to appear
         for i in range(10):
-            if os.path.exists(state.v2v_log) \
-                    and os.path.exists(state.machine_readable_log):
+            if os.path.exists(STATE.v2v_log) \
+                    and os.path.exists(STATE.machine_readable_log):
                 continue
             time.sleep(1)
-        self._log = open(state.v2v_log, 'rb' + py2unimode)
-        self._machine_log = open(state.machine_readable_log, 'rb' + py2unimode)
+        self._log = open(STATE.v2v_log, 'rb' + py2unimode)
+        self._machine_log = open(STATE.machine_readable_log, 'rb' + py2unimode)
         self._current_disk = None
         self._current_path = None
         self._duplicate = duplicate
@@ -87,15 +86,15 @@ class OutputParser(object):
             try:
                 self._current_disk = int(m.group(1))-1
                 self._current_path = None
-                state['disk_count'] = int(m.group(2))
+                STATE['disk_count'] = int(m.group(2))
                 logging.info('Copying disk %d/%d',
-                             self._current_disk+1, state['disk_count'])
-                if state['disk_count'] != len(state['disks']):
+                             self._current_disk+1, STATE['disk_count'])
+                if STATE['disk_count'] != len(STATE['disks']):
                     logging.warning(
                         'Number of supplied disk paths (%d) does not match'
                         ' number of disks in VM (%s)',
-                        len(state['disks']),
-                        state['disk_count'])
+                        len(STATE['disks']),
+                        STATE['disk_count'])
             except ValueError:
                 error(
                     'Failed to decode disk number',
@@ -113,9 +112,9 @@ class OutputParser(object):
         # SSH (all outputs)
         m = self.SSH_VMX_GUEST_NAME.match(line)
         if m is not None:
-            state['internal']['display_name'] = m.group(1)
+            STATE['internal']['display_name'] = m.group(1)
             logging.info('Set VM display name to: %s',
-                         state['internal']['display_name'])
+                         STATE['internal']['display_name'])
 
         # SSH + RHV
         m = self.OVERLAY_SOURCE_RE.match(line)
@@ -144,7 +143,7 @@ class OutputParser(object):
             if self._current_path is not None and \
                     self._current_disk is not None:
                 try:
-                    state['disks'][self._current_disk]['progress'] = \
+                    STATE['disks'][self._current_disk]['progress'] = \
                         float(m.group(1))
                     logging.debug('Updated progress: %s', m.group(1))
                 except ValueError:
@@ -157,16 +156,16 @@ class OutputParser(object):
 
         m = self.RHV_DISK_UUID.match(line)
         if m is not None:
-            path = state['disks'][self._current_disk]['path']
+            path = STATE['disks'][self._current_disk]['path']
             disk_id = m.group('uuid')
-            state['internal']['disk_ids'][path] = disk_id
+            STATE['internal']['disk_ids'][path] = disk_id
             logging.debug('Path \'%s\' has disk id=\'%s\'', path, disk_id)
 
         # OpenStack volume UUID
         m = self.OSP_VOLUME_ID.match(line)
         if m is not None:
             volume_id = m.group('uuid').decode('utf-8')
-            ids = state['internal']['disk_ids']
+            ids = STATE['internal']['disk_ids']
             ids[len(ids)+1] = volume_id
             logging.debug('Adding OSP volume %s', volume_id)
 
@@ -176,7 +175,7 @@ class OutputParser(object):
             volume_id = m.group('uuid').decode('utf-8')
             index = int(m.group('volume'))
             # Just check
-            if state['internal']['disk_ids'].get(index) != volume_id:
+            if STATE['internal']['disk_ids'].get(index) != volume_id:
                 logging.debug(
                     'Volume \'%s\' is NOT at index %d', volume_id, index)
 
@@ -184,7 +183,7 @@ class OutputParser(object):
         m = self.RHV_VM_ID.search(line)
         if m is not None:
             vm_id = m.group('uuid').decode('utf-8')
-            state['vm_id'] = vm_id
+            STATE['vm_id'] = vm_id
             logging.info('Created VM with id=%s', vm_id)
 
     def close(self):
@@ -196,8 +195,8 @@ class OutputParser(object):
             return
 
         # NOTE: We assume that _current_disk is monotonic
-        for i in xrange(self._current_disk, len(state['disks'])):
-            if state['disks'][i]['path'] == self._current_path:
+        for i in xrange(self._current_disk, len(STATE['disks'])):
+            if STATE['disks'][i]['path'] == self._current_path:
                 if i == self._current_disk:
                     # We have correct index
                     logging.debug('Found path at correct index')
@@ -205,14 +204,14 @@ class OutputParser(object):
                     # Move item to current index
                     logging.debug('Moving path from index %d to %d', i,
                                   self._current_disk)
-                    d = state['disks'].pop(i)
-                    state['disks'].insert(self._current_disk, d)
+                    d = STATE['disks'].pop(i)
+                    STATE['disks'].insert(self._current_disk, d)
                 return
 
         # Path not found
         logging.debug('Path \'%s\' not found in %r', self._current_path,
-                      state['disks'])
-        state['disks'].insert(
+                      STATE['disks'])
+        STATE['disks'].insert(
             self._current_disk,
             {
                 'path': self._current_path,

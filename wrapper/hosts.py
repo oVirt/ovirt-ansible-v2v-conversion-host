@@ -163,8 +163,7 @@ class CNVHost(BaseHost):
         """ Called to do tasks on progress update """
         # Update POD annotation with progress
         # Just an average now, maybe later we can weight it by disk size
-        state = STATE
-        disks = [d['progress'] for d in state['disks']]
+        disks = [d['progress'] for d in STATE['disks']]
         if len(disks) > 0:
             progress = sum(disks)/len(disks)
         else:
@@ -275,8 +274,7 @@ class OSPHost(BaseHost):
     TYPE = BaseHost.TYPE_OSP
 
     def create_runner(self, *args, **kwargs):
-        state = STATE
-        if state.daemonize:
+        if STATE.daemonize:
             return SystemdRunner(self, *args, **kwargs)
         else:
             return SubprocessRunner(self, *args, **kwargs)
@@ -287,10 +285,10 @@ class OSPHost(BaseHost):
             os.makedirs(log_dir)
         return (log_dir, log_dir)
 
-    def handle_cleanup(self, data, state):
+    def handle_cleanup(self, data):
         """ Handle cleanup after failed conversion """
-        volumes = state['internal']['disk_ids'].values()
-        ports = state['internal']['ports']
+        volumes = STATE['internal']['disk_ids'].values()
+        ports = STATE['internal']['ports']
         # Remove attached volumes
         for v in volumes:
             rm_args = [
@@ -337,15 +335,15 @@ class OSPHost(BaseHost):
                 logging.error(
                     'Failed to remove volumes(s) from destination project')
 
-    def handle_finish(self, data, state):
+    def handle_finish(self, data):
         """
         Handle finish after successfull conversion
 
         For OpenStack this entails creating a VM instance.
         """
         vm_name = data['vm_name']
-        if state['internal']['display_name'] is not None:
-            vm_name = state['internal']['display_name']
+        if STATE['internal']['display_name'] is not None:
+            vm_name = STATE['internal']['display_name']
 
         # Init keystone
         if self._run_openstack(['token', 'issue'], data) is None:
@@ -353,15 +351,15 @@ class OSPHost(BaseHost):
             return False
         volumes = []
         # Build volume list
-        for k in sorted(state['internal']['disk_ids'].keys()):
-            volumes.append(state['internal']['disk_ids'][k])
+        for k in sorted(STATE['internal']['disk_ids'].keys()):
+            volumes.append(STATE['internal']['disk_ids'][k])
         if len(volumes) == 0:
             error('No volumes found!')
             return False
-        if len(volumes) != len(state['internal']['disk_ids']):
+        if len(volumes) != len(STATE['internal']['disk_ids']):
             error('Detected duplicate indices of Cinder volumes')
             logging.debug('Source volume map: %r',
-                          state['internal']['disk_ids'])
+                          STATE['internal']['disk_ids'])
             logging.debug('Assumed volume list: %r', volumes)
             return False
         for vol in volumes:
@@ -444,7 +442,7 @@ class OSPHost(BaseHost):
             port = json.loads(port)
             logging.info('Created port id=%s', port['id'])
             ports.append(port['id'])
-        state['internal']['ports'] = ports
+        STATE['internal']['ports'] = ports
         # Create instance
         os_command = [
             'server', 'create',
@@ -469,8 +467,8 @@ class OSPHost(BaseHost):
             return False
         else:
             vm = json.loads(vm)
-            state['vm_id'] = str(vm.get('id'))
-            logging.info('Created OSP instance with id=%s', state['vm_id'])
+            STATE['vm_id'] = str(vm.get('id'))
+            logging.info('Created OSP instance with id=%s', STATE['vm_id'])
             return True
 
     def check_install_drivers(self, data):
@@ -656,8 +654,7 @@ class VDSMHost(BaseHost):
                 connection.close()
 
     def create_runner(self, *args, **kwargs):
-        state = STATE
-        if state.daemonize:
+        if STATE.daemonize:
             return SystemdRunner(self, *args, **kwargs)
         else:
             return SubprocessRunner(self, *args, **kwargs)
@@ -670,7 +667,7 @@ class VDSMHost(BaseHost):
         with self.sdk_connection(data) as conn:
             disks_service = conn.system_service().disks_service()
             transfers_service = conn.system_service().image_transfers_service()
-            disk_ids = list(state['internal']['disk_ids'].values())
+            disk_ids = list(STATE['internal']['disk_ids'].values())
             # First stop all active transfers...
             try:
                 transfers = transfers_service.list()
