@@ -1,6 +1,7 @@
 import tempfile
 import os
 import json
+import stat
 
 
 class State(object):
