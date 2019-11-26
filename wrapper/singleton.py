@@ -63,7 +63,7 @@ class State(object):
                 dir=os.path.dirname(self.state_file))
             os.fchmod(
                 tmp_state[0],
-                stat.S_IRUSR|stat.S_IWUSR|state.S_IRGRP|stat.S_IROTH)
+                stat.S_IRUSR|stat.S_IWUSR|stat.S_IRGRP|stat.S_IROTH)
             with os.fdopen(tmp_state[0], 'w') as f:
                 json.dump(state, f)
             os.rename(tmp_state[1], self.state_file)
