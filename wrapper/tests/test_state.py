@@ -60,3 +60,17 @@ class TestState(unittest.TestCase):
         state.write()
         with open(state.state_file, 'rb') as f:
             json.loads(f.read())
+
+    def test_write_full(self):
+        state = wrapper.State().instance
+        self.assertEqual(state.state_file, None)
+        state.state_file = tempfile.mkstemp(prefix='vchtest')[1]
+        state['disks'] = [
+            {'path': '/some/path', 'progress': 12.34},
+            {'path': '/some/other/path', 'progress': 0}
+        ]
+        # TODO: This can happen and it fails, so it needs to be fixed
+        # state['last_message'] = b'Byte data being saved'
+        state.write()
+        with open(state.state_file, 'rb') as f:
+            json.loads(f.read())
