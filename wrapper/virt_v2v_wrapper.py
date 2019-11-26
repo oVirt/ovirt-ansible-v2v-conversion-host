@@ -248,7 +248,7 @@ def wrapper(host, data, v2v_caps, agent_sock=None):
     runner = host.create_runner(v2v_args, v2v_env, state.v2v_log)
     try:
         runner.run()
-    except RuntimeError as e:
+    except RuntimeError:
         error('Failed to start virt-v2v', exception=True)
         state['failed'] = True
         state.write()
