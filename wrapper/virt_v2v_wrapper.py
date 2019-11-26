@@ -434,7 +434,7 @@ def main():
         # Make sure all the needed keys are in data. This is rather poor
         # validation, but...
         if 'vm_name' not in data:
-                hard_error('Missing vm_name')
+            hard_error('Missing vm_name')
 
         # Transports (only VDDK for now)
         if 'transport_method' not in data:
