@@ -13,10 +13,9 @@ class _StateEncoder(json.JSONEncoder):
         if isinstance(obj, bytes):
             return obj.decode()
         if isinstance(obj, _StateObject):
-            hidden = ['internal']
-            if hasattr(obj, '_hidden'):
-                hidden += obj._hidden
-            slots = [key for key in obj.__slots__ if key not in hidden]
+            hidden = ['internal'] + getattr(obj, '_hidden', [])
+            slots = [key for key in obj.__slots__
+                     if key not in hidden and not key.startswith('_')]
             return {key: getattr(obj, key) for key in slots}
         return json.JSONEncoder.default(self, obj)
 
@@ -115,8 +114,7 @@ class _State(object):
         for key in hidden:
             del state[key]
 
-        if hasattr(self, '_hidden'):
-            hidden += self._hidden
+        hidden = ['internal'] + getattr(self, '_hidden', [])
         slots = [key for key in self.__slots__
                  if key not in hidden and not key.startswith('_')]
         state.update({key: getattr(self, key) for key in slots})
