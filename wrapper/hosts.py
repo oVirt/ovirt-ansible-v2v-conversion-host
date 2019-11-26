@@ -241,7 +241,7 @@ class K8SCommunicator(object):
         c.setopt(pycurl.CAINFO, self._cert)
         c.setopt(pycurl.WRITEFUNCTION, response.write)
         c.perform()
-        ret = c.getinfo(c.RESPONSE_CODE)
+        ret = c.getinfo(pycurl.RESPONSE_CODE)
         logging.debug('HTTP response code %d', ret)
         if ret >= 300:
             logging.debug('response output: %s', response.getvalue())
@@ -263,7 +263,7 @@ class K8SCommunicator(object):
         c.setopt(pycurl.READFUNCTION, data.read)
         c.setopt(pycurl.WRITEFUNCTION, response.write)
         c.perform()
-        ret = c.getinfo(c.RESPONSE_CODE)
+        ret = c.getinfo(pycurl.RESPONSE_CODE)
         logging.debug('HTTP response code %d', ret)
         if ret >= 300:
             logging.debug('response output: %s', response.getvalue())
