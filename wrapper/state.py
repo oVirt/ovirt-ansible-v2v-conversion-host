@@ -57,6 +57,7 @@ class _State(object):
         'machine_readable_log',
 
         # These fields are written to the state file
+        'disks',
         'failed',
     ]
 
@@ -78,7 +79,6 @@ class _State(object):
         # For now keep content as dict. Idealy this should be changed
         # later too.
         self._state = {
-            'disks': [],
             'internal': {
                 'disk_ids': {},
                 'display_name': None,
@@ -94,6 +94,8 @@ class _State(object):
         self.state_file = None
         self.v2v_log = None
         self.machine_readable_log = None
+
+        self.disks = []
         self.failed = False
 
     def __getattr__(self, name):

@@ -161,7 +161,7 @@ class CNVHost(BaseHost):
         """ Called to do tasks on progress update """
         # Update POD annotation with progress
         # Just an average now, maybe later we can weight it by disk size
-        disks = [d.progress for d in STATE['disks']]
+        disks = [d.progress for d in STATE.disks]
         if len(disks) > 0:
             progress = sum(disks)/len(disks)
         else:

@@ -13,7 +13,7 @@ class TestState(unittest.TestCase):
 
     def test_dict(self):
         """ Make sure the access to internal dictionary works """
-        self.assertEqual(STATE['disks'], [])
+        self.assertEqual(STATE.disks, [])
         self.assertEqual(STATE['internal']['disk_ids'], {})
         # check -- change -- check
         self.assertEqual(STATE.failed, False)
@@ -56,7 +56,7 @@ class TestState(unittest.TestCase):
     def test_write_full(self):
         self.assertEqual(STATE.state_file, None)
         STATE.state_file = tempfile.mkstemp(prefix='vchtest')[1]
-        STATE['disks'] = [Disk('/some/path'), Disk('/some/other/path', 12.34)]
+        STATE.disks = [Disk('/some/path'), Disk('/some/other/path', 12.34)]
         STATE['last_message'] = b'Byte data being saved'
         STATE.write()
         with open(STATE.state_file, 'rb') as f:

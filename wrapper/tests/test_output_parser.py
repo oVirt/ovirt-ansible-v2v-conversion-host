@@ -15,7 +15,7 @@ class TestOutputParser(unittest.TestCase):
         with wrapper.log_parser() as parser:
             parser._current_disk = 0
             parser._current_path = '/path1'
-            STATE['disks'] = [
+            STATE.disks = [
                 Disk('[store1] path1.vmdk'),
                 Disk('[store1] path2.vmdk'),
                 Disk('[store1] path3.vmdk'),
@@ -31,15 +31,15 @@ class TestOutputParser(unittest.TestCase):
         with wrapper.log_parser() as parser:
             parser._current_disk = 0
             parser._current_path = '[store1] path1.vmdk'
-            STATE['disks'] = [
+            STATE.disks = [
                 Disk('[store1] path2.vmdk'),
                 Disk('[store1] path1.vmdk'),
                 Disk('[store1] path3.vmdk'),
                 ]
             parser._locate_disk()
-            self.assertEqual(STATE['disks'][0].path, '[store1] path1.vmdk')
-            self.assertEqual(STATE['disks'][1].path, '[store1] path2.vmdk')
-            self.assertEqual(STATE['disks'][2].path, '[store1] path3.vmdk')
+            self.assertEqual(STATE.disks[0].path, '[store1] path1.vmdk')
+            self.assertEqual(STATE.disks[1].path, '[store1] path2.vmdk')
+            self.assertEqual(STATE.disks[2].path, '[store1] path3.vmdk')
 
     def test_progress(self):
         STATE.v2v_log = '/dev/null'
@@ -47,9 +47,9 @@ class TestOutputParser(unittest.TestCase):
         with wrapper.log_parser() as parser:
             parser._current_disk = 0
             parser._current_path = '/path1'
-            STATE['disks'] = [Disk('/path1', 0.0)]
+            STATE.disks = [Disk('/path1', 0.0)]
             parser.parse_line(b'  (10.42/100%)')
-            self.assertEqual(STATE['disks'][0].progress, 10.42)
+            self.assertEqual(STATE.disks[0].progress, 10.42)
 
     # TODO
     # def test_rhv_disk_path_ssh(self):
@@ -73,7 +73,7 @@ class TestOutputParser(unittest.TestCase):
         with wrapper.log_parser() as parser:
             parser._current_disk = 0
             path = '/path1'
-            STATE['disks'] = [Disk(path)]
+            STATE.disks = [Disk(path)]
             parser.parse_line(
                 b'disk.id = \'11111111-1111-1111-1111-111111111111\'')
             self.assertIn(path, STATE['internal']['disk_ids'])
