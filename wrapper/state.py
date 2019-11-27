@@ -16,7 +16,8 @@ class _StateEncoder(json.JSONEncoder):
             hidden = ['internal'] + getattr(obj, '_hidden', [])
             slots = [key for key in obj.__slots__
                      if key not in hidden and not key.startswith('_')]
-            return {key: getattr(obj, key) for key in slots}
+            return {key: getattr(obj, key) for key in slots
+                    if getattr(obj, key) is not None}
         return json.JSONEncoder.default(self, obj)
 
 
@@ -124,21 +125,21 @@ class _State(object):
     def __str__(self):
         return repr(self._state)
 
-    def write(self):
-        hidden = ['internal']
-
+    def as_dict(self):
         # Ideally this shenanigans will go away after all of the dict is
         # converted as we should be then able to just json.dumps(self).
         state = self._state.copy()
-        for key in hidden:
-            if key in state:
-                del state[key]
-
+        if 'internal' in state:
+            del state['internal']
         hidden = ['internal'] + getattr(self, '_hidden', [])
+
         slots = [key for key in self.__slots__
                  if key not in hidden and not key.startswith('_')]
         state.update({key: getattr(self, key) for key in slots})
+        return state
 
+    def write(self):
+        state = self.as_dict()
         tmp_state = tempfile.mkstemp(suffix='.v2v.state',
                                      dir=os.path.dirname(self.state_file))
         os.fchmod(tmp_state[0],
