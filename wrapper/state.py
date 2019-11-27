@@ -57,6 +57,7 @@ class _State(object):
         'machine_readable_log',
 
         # These fields are written to the state file
+        'disk_count',
         'disks',
         'failed',
         'throttling',
@@ -92,6 +93,7 @@ class _State(object):
         self.v2v_log = None
         self.machine_readable_log = None
 
+        self.disk_count = 0
         self.disks = []
         self.failed = False
         # Does it make sense to create a throttling class?

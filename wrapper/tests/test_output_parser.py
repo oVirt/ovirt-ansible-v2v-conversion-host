@@ -23,7 +23,7 @@ class TestOutputParser(unittest.TestCase):
             parser.parse_line(b'Copying disk 2/3 to /some/path')
             self.assertEqual(parser._current_disk, 1)
             self.assertIsNone(parser._current_path)
-            self.assertEqual(STATE['disk_count'], 3)
+            self.assertEqual(STATE.disk_count, 3)
 
     def test_locate_disk(self):
         STATE.v2v_log = '/dev/null'

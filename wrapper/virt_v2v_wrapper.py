@@ -524,7 +524,7 @@ def main():
                 for d in data['source_disks']:
                     STATE.disks.append(Disk(d, 0))
                 logging.debug('Internal disk list: %r', STATE.disks)
-                STATE['disk_count'] = len(data['source_disks'])
+                STATE.disk_count = len(data['source_disks'])
             # Create state file before dumping the JSON
             STATE.write()
 

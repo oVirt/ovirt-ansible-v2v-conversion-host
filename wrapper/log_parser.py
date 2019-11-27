@@ -86,15 +86,15 @@ class OutputParser(object):
             try:
                 self._current_disk = int(m.group(1))-1
                 self._current_path = None
-                STATE['disk_count'] = int(m.group(2))
+                STATE.disk_count = int(m.group(2))
                 logging.info('Copying disk %d/%d',
-                             self._current_disk+1, STATE['disk_count'])
-                if STATE['disk_count'] != len(STATE.disks):
+                             self._current_disk+1, STATE.disk_count)
+                if STATE.disk_count != len(STATE.disks):
                     logging.warning(
                         'Number of supplied disk paths (%d) does not match'
                         ' number of disks in VM (%s)',
                         len(STATE.disks),
-                        STATE['disk_count'])
+                        STATE.disk_count)
             except ValueError:
                 error(
                     'Failed to decode disk number',
