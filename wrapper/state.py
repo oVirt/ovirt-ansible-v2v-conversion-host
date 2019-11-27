@@ -5,7 +5,11 @@ import stat
 
 
 class _StateObject(object):
-    pass
+    def as_dict(self):
+        hidden = ['internal'] + getattr(self, '_hidden', [])
+        slots = [key for key in getattr(self, '__slots__', self.__dict__)
+                 if key not in hidden and not key.startswith('_')]
+        return {key: getattr(self, key) for key in slots}
 
 
 class _StateEncoder(json.JSONEncoder):
@@ -13,11 +17,7 @@ class _StateEncoder(json.JSONEncoder):
         if isinstance(obj, bytes):
             return obj.decode()
         if isinstance(obj, _StateObject):
-            hidden = ['internal'] + getattr(obj, '_hidden', [])
-            slots = [key for key in obj.__slots__
-                     if key not in hidden and not key.startswith('_')]
-            return {key: getattr(obj, key) for key in slots
-                    if getattr(obj, key) is not None}
+            return obj.as_dict()
         return json.JSONEncoder.default(self, obj)
 
 
@@ -39,7 +39,7 @@ class Disk(_StateObject):
         return "Disk(path=%s, progress=%.2f)" % (self.path, self.progress)
 
 
-class _State(object):
+class _State(_StateObject):
     """
     State object using a dict for data storage.
 
@@ -107,19 +107,13 @@ class _State(object):
         self.throttling = {'cpu': None, 'network': None}
         self.vm_id = None
 
-    def as_dict(self):
-        hidden = ['internal'] + getattr(self, '_hidden', [])
-        slots = [key for key in self.__slots__
-                 if key not in hidden and not key.startswith('_')]
-        return {key: getattr(self, key) for key in slots}
-
     def write(self):
         tmp_state = tempfile.mkstemp(suffix='.v2v.state',
                                      dir=os.path.dirname(self.state_file))
         os.fchmod(tmp_state[0],
                   stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH)
         with os.fdopen(tmp_state[0], 'w') as f:
-            json.dump(self.as_dict(), f, cls=_StateEncoder)
+            json.dump(self, f, cls=_StateEncoder)
             os.rename(tmp_state[1], self.state_file)
 
 
