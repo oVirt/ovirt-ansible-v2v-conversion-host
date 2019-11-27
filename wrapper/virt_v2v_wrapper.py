@@ -576,7 +576,7 @@ def main():
                 try:
                     host.handle_cleanup(data)
                 finally:
-                    STATE['finished'] = True
+                    STATE.finished = True
                     STATE.write()
 
         # Remove password files
@@ -589,7 +589,7 @@ def main():
                       'Error removing password file: %s' % f,
                       exception=True)
 
-        STATE['finished'] = True
+        STATE.finished = True
         STATE.write()
 
     except Exception:

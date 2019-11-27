@@ -60,6 +60,7 @@ class _State(object):
         'disk_count',
         'disks',
         'failed',
+        'finished',
         'internal',
         'last_message',
         'pid',
@@ -96,6 +97,7 @@ class _State(object):
         self.disk_count = 0
         self.disks = []
         self.failed = False
+        self.finished = None
         self.internal = {
             'disk_ids': {},
             'display_name': None,
