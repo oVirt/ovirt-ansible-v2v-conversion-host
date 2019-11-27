@@ -23,16 +23,6 @@ class TestState(unittest.TestCase):
     def test_state(self):
         state1 = STATE
         state2 = STATE
-        # Internal dictionary
-        key = 'abcdef'
-        value = '123456'
-        with self.assertRaises(KeyError):
-            state1[key]
-        with self.assertRaises(KeyError):
-            state2[key]
-        state1[key] = value
-        self.assertEqual(state1[key], value)
-        self.assertEqual(state2[key], value)
         # Property
         state1.state_file = None
         state2.state_file = None

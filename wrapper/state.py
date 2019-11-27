@@ -50,8 +50,6 @@ class _State(object):
     """
 
     __slots__ = [
-        '_state',  # Should be removed later
-
         'daemonize',
         'state_file',
         'v2v_log',
@@ -86,10 +84,6 @@ class _State(object):
         This function exists only so that the state can be re-used in tests
         """
 
-        # For now keep content as dict. Idealy this should be changed
-        # later too.
-        self._state = {
-        }
         self.daemonize = True
         self.state_file = None
         self.v2v_log = None
@@ -113,39 +107,19 @@ class _State(object):
         self.throttling = {'cpu': None, 'network': None}
         self.vm_id = None
 
-    def __getattr__(self, name):
-        return getattr(self._state, name)
-
-    def __getitem__(self, key):
-        return self._state[key]
-
-    def __setitem__(self, key, value):
-        self._state[key] = value
-
-    def __str__(self):
-        return repr(self._state)
-
     def as_dict(self):
-        # Ideally this shenanigans will go away after all of the dict is
-        # converted as we should be then able to just json.dumps(self).
-        state = self._state.copy()
-        if 'internal' in state:
-            del state['internal']
         hidden = ['internal'] + getattr(self, '_hidden', [])
-
         slots = [key for key in self.__slots__
                  if key not in hidden and not key.startswith('_')]
-        state.update({key: getattr(self, key) for key in slots})
-        return state
+        return {key: getattr(self, key) for key in slots}
 
     def write(self):
-        state = self.as_dict()
         tmp_state = tempfile.mkstemp(suffix='.v2v.state',
                                      dir=os.path.dirname(self.state_file))
         os.fchmod(tmp_state[0],
                   stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH)
         with os.fdopen(tmp_state[0], 'w') as f:
-            json.dump(state, f, cls=_StateEncoder)
+            json.dump(self.as_dict(), f, cls=_StateEncoder)
             os.rename(tmp_state[1], self.state_file)
 
 
