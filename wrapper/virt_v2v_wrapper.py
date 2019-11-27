@@ -252,7 +252,7 @@ def wrapper(host, data, v2v_caps, agent_sock=None):
         throttling_update(runner, data['throttling'])
 
     try:
-        STATE['started'] = True
+        STATE.started = True
         STATE.write()
         with log_parser(isinstance(host, CNVHost)) as parser:
             while runner.is_running():
