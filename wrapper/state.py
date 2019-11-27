@@ -34,6 +34,9 @@ class Disk(_StateObject):
         self.path = path
         self.progress = progress
 
+    def __repr__(self):
+        return "Disk(path=%s, progress=%.2f)" % (self.path, self.progress)
+
 
 class _State(object):
     """
