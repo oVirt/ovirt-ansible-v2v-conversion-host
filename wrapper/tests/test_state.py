@@ -57,7 +57,7 @@ class TestState(unittest.TestCase):
         self.assertEqual(STATE.state_file, None)
         STATE.state_file = tempfile.mkstemp(prefix='vchtest')[1]
         STATE.disks = [Disk('/some/path'), Disk('/some/other/path', 12.34)]
-        STATE['last_message'] = b'Byte data being saved'
+        STATE.last_message = b'Byte data being saved'
         STATE.write()
         with open(STATE.state_file, 'rb') as f:
             json.loads(f.read())

@@ -61,6 +61,7 @@ class _State(object):
         'disks',
         'failed',
         'internal',
+        'last_message',
         'throttling',
     ]
 
@@ -97,6 +98,7 @@ class _State(object):
             'ports': [],
             'throttling_file': None,
         }
+        self.last_message = None
         # Does it make sense to create a throttling class?
         self.throttling = {'cpu': None, 'network': None}
 

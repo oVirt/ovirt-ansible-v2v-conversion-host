@@ -56,7 +56,7 @@ def error(short_message, *args, **kwargs):
     else:
         logging.info('have error: %r %r', args, kwargs)
         logging.error(*args, **kwargs)
-    STATE['last_message'] = {
+    STATE.last_message = {
         'message': short_message,
         'type': 'error'
         }
