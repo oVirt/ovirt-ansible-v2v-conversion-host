@@ -9,7 +9,8 @@ class _StateObject(object):
         hidden = ['internal'] + getattr(self, '_hidden', [])
         slots = [key for key in getattr(self, '__slots__', self.__dict__)
                  if key not in hidden and not key.startswith('_')]
-        return {key: getattr(self, key) for key in slots}
+        return {key: getattr(self, key) for key in slots
+                if getattr(self, key) is not None}
 
 
 class _StateEncoder(json.JSONEncoder):
