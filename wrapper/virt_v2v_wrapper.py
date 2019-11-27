@@ -153,11 +153,11 @@ def throttling_update(runner, initial=None):
     else:
         # Read from throttling file
         try:
-            with open(STATE['internal']['throttling_file']) as f:
+            with open(STATE.internal['throttling_file']) as f:
                 throttling = json.load(f)
             # Remove file when finished to prevent spamming logs with repeated
             # messages
-            os.remove(STATE['internal']['throttling_file'])
+            os.remove(STATE.internal['throttling_file'])
             logging.info('Fetched updated throttling info from file')
         except IOError as e:
             if e.errno != errno.ENOENT:
@@ -398,7 +398,7 @@ def main():
     STATE.state_file = os.path.join(STATE_DIR, 'v2v-import-%s.state' % log_tag)
     throttling_file = os.path.join(STATE_DIR,
                                    'v2v-import-%s.throttle' % log_tag)
-    STATE['internal']['throttling_file'] = throttling_file
+    STATE.internal['throttling_file'] = throttling_file
 
     log_format = '%(asctime)s:%(levelname)s:' \
         + ' %(message)s (%(module)s:%(lineno)d)'

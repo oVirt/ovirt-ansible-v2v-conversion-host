@@ -60,6 +60,7 @@ class _State(object):
         'disk_count',
         'disks',
         'failed',
+        'internal',
         'throttling',
     ]
 
@@ -81,12 +82,6 @@ class _State(object):
         # For now keep content as dict. Idealy this should be changed
         # later too.
         self._state = {
-            'internal': {
-                'disk_ids': {},
-                'display_name': None,
-                'ports': [],
-                'throttling_file': None,
-            },
         }
         self.daemonize = True
         self.state_file = None
@@ -96,6 +91,12 @@ class _State(object):
         self.disk_count = 0
         self.disks = []
         self.failed = False
+        self.internal = {
+            'disk_ids': {},
+            'display_name': None,
+            'ports': [],
+            'throttling_file': None,
+        }
         # Does it make sense to create a throttling class?
         self.throttling = {'cpu': None, 'network': None}
 

@@ -76,9 +76,9 @@ class TestOutputParser(unittest.TestCase):
             STATE.disks = [Disk(path)]
             parser.parse_line(
                 b'disk.id = \'11111111-1111-1111-1111-111111111111\'')
-            self.assertIn(path, STATE['internal']['disk_ids'])
+            self.assertIn(path, STATE.internal['disk_ids'])
             self.assertEqual(
-                STATE['internal']['disk_ids'][path],
+                STATE.internal['disk_ids'][path],
                 b'11111111-1111-1111-1111-111111111111')
 
     def test_osp_volume_uuid(self):
@@ -91,11 +91,11 @@ class TestOutputParser(unittest.TestCase):
                     ]
             for l in lines:
                 parser.parse_line(l)
-            self.assertIn(1, STATE['internal']['disk_ids'])
-            self.assertIn(2, STATE['internal']['disk_ids'])
+            self.assertIn(1, STATE.internal['disk_ids'])
+            self.assertIn(2, STATE.internal['disk_ids'])
             self.assertEqual(
-                STATE['internal']['disk_ids'][1],
+                STATE.internal['disk_ids'][1],
                 '77c51545-f2a4-4bbf-8f04-169a15c23354')
             self.assertEqual(
-                STATE['internal']['disk_ids'][2],
+                STATE.internal['disk_ids'][2],
                 'd85b7a6f-bffa-4b77-93df-912afd6e7014')

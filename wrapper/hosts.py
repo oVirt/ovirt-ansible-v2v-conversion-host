@@ -285,8 +285,8 @@ class OSPHost(BaseHost):
 
     def handle_cleanup(self, data):
         """ Handle cleanup after failed conversion """
-        volumes = STATE['internal']['disk_ids'].values()
-        ports = STATE['internal']['ports']
+        volumes = STATE.internal['disk_ids'].values()
+        ports = STATE.internal['ports']
         # Remove attached volumes
         for v in volumes:
             rm_args = [
@@ -340,8 +340,8 @@ class OSPHost(BaseHost):
         For OpenStack this entails creating a VM instance.
         """
         vm_name = data['vm_name']
-        if STATE['internal']['display_name'] is not None:
-            vm_name = STATE['internal']['display_name']
+        if STATE.internal['display_name'] is not None:
+            vm_name = STATE.internal['display_name']
 
         # Init keystone
         if self._run_openstack(['token', 'issue'], data) is None:
@@ -349,15 +349,15 @@ class OSPHost(BaseHost):
             return False
         volumes = []
         # Build volume list
-        for k in sorted(STATE['internal']['disk_ids'].keys()):
-            volumes.append(STATE['internal']['disk_ids'][k])
+        for k in sorted(STATE.internal['disk_ids'].keys()):
+            volumes.append(STATE.internal['disk_ids'][k])
         if len(volumes) == 0:
             error('No volumes found!')
             return False
-        if len(volumes) != len(STATE['internal']['disk_ids']):
+        if len(volumes) != len(STATE.internal['disk_ids']):
             error('Detected duplicate indices of Cinder volumes')
             logging.debug('Source volume map: %r',
-                          STATE['internal']['disk_ids'])
+                          STATE.internal['disk_ids'])
             logging.debug('Assumed volume list: %r', volumes)
             return False
         for vol in volumes:
@@ -440,7 +440,7 @@ class OSPHost(BaseHost):
             port = json.loads(port)
             logging.info('Created port id=%s', port['id'])
             ports.append(port['id'])
-        STATE['internal']['ports'] = ports
+        STATE.internal['ports'] = ports
         # Create instance
         os_command = [
             'server', 'create',
@@ -665,7 +665,7 @@ class VDSMHost(BaseHost):
         with self.sdk_connection(data) as conn:
             disks_service = conn.system_service().disks_service()
             transfers_service = conn.system_service().image_transfers_service()
-            disk_ids = list(STATE['internal']['disk_ids'].values())
+            disk_ids = list(STATE.internal['disk_ids'].values())
             # First stop all active transfers...
             try:
                 transfers = transfers_service.list()

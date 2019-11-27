@@ -112,9 +112,9 @@ class OutputParser(object):
         # SSH (all outputs)
         m = self.SSH_VMX_GUEST_NAME.match(line)
         if m is not None:
-            STATE['internal']['display_name'] = m.group(1)
+            STATE.internal['display_name'] = m.group(1)
             logging.info('Set VM display name to: %s',
-                         STATE['internal']['display_name'])
+                         STATE.internal['display_name'])
 
         # SSH + RHV
         m = self.OVERLAY_SOURCE_RE.match(line)
@@ -158,14 +158,14 @@ class OutputParser(object):
         if m is not None:
             path = STATE.disks[self._current_disk].path
             disk_id = m.group('uuid')
-            STATE['internal']['disk_ids'][path] = disk_id
+            STATE.internal['disk_ids'][path] = disk_id
             logging.debug('Path \'%s\' has disk id=\'%s\'', path, disk_id)
 
         # OpenStack volume UUID
         m = self.OSP_VOLUME_ID.match(line)
         if m is not None:
             volume_id = m.group('uuid').decode('utf-8')
-            ids = STATE['internal']['disk_ids']
+            ids = STATE.internal['disk_ids']
             ids[len(ids)+1] = volume_id
             logging.debug('Adding OSP volume %s', volume_id)
 
@@ -175,7 +175,7 @@ class OutputParser(object):
             volume_id = m.group('uuid').decode('utf-8')
             index = int(m.group('volume'))
             # Just check
-            if STATE['internal']['disk_ids'].get(index) != volume_id:
+            if STATE.internal['disk_ids'].get(index) != volume_id:
                 logging.debug(
                     'Volume \'%s\' is NOT at index %d', volume_id, index)
 

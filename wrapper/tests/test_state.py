@@ -14,7 +14,7 @@ class TestState(unittest.TestCase):
     def test_dict(self):
         """ Make sure the access to internal dictionary works """
         self.assertEqual(STATE.disks, [])
-        self.assertEqual(STATE['internal']['disk_ids'], {})
+        self.assertEqual(STATE.internal['disk_ids'], {})
         # check -- change -- check
         self.assertEqual(STATE.failed, False)
         STATE.failed = True
