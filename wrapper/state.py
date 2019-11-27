@@ -59,6 +59,7 @@ class _State(object):
         # These fields are written to the state file
         'disks',
         'failed',
+        'throttling',
     ]
 
     _hidden = [
@@ -85,10 +86,6 @@ class _State(object):
                 'ports': [],
                 'throttling_file': None,
             },
-            'throttling': {
-                'cpu': None,
-                'network': None,
-            }
         }
         self.daemonize = True
         self.state_file = None
@@ -97,6 +94,8 @@ class _State(object):
 
         self.disks = []
         self.failed = False
+        # Does it make sense to create a throttling class?
+        self.throttling = {'cpu': None, 'network': None}
 
     def __getattr__(self, name):
         return getattr(self._state, name)

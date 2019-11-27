@@ -192,7 +192,7 @@ def throttling_update(runner, initial=None):
                         'Failed to parse value for CPU limit',
                         'Failed to parse value for CPU limit: %s', v)
                     continue
-            if val != STATE['throttling']['cpu'] and \
+            if val != STATE.throttling['cpu'] and \
                     runner.systemd_set_property('CPUQuota', set_val):
                 processed[k] = val
             else:
@@ -214,11 +214,11 @@ def throttling_update(runner, initial=None):
                         'Failed to parse value for network limit',
                         'Failed to parse value for network limit: %s', v)
                     continue
-            if val != STATE['throttling']['network'] and \
+            if val != STATE.throttling['network'] and \
                     runner.set_network_limit(set_val):
                 logging.debug(
                     'Changing network throttling to %s (previous: %s)',
-                    val, STATE['throttling']['network'])
+                    val, STATE.throttling['network'])
                 processed[k] = val
             else:
                 error(
@@ -226,8 +226,8 @@ def throttling_update(runner, initial=None):
                     'Failed to set network limit to %s', val)
         else:
             logging.debug('Ignoring unknown throttling request: %s', k)
-    STATE['throttling'].update(processed)
-    logging.info('New throttling setup: %r', STATE['throttling'])
+    STATE.throttling.update(processed)
+    logging.info('New throttling setup: %r', STATE.throttling)
 
 
 def wrapper(host, data, v2v_caps, agent_sock=None):
