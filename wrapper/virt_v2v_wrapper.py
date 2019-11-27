@@ -271,10 +271,10 @@ def wrapper(host, data, v2v_caps, agent_sock=None):
         logging.info('Killing virt-v2v process')
         runner.kill()
 
-    STATE['return_code'] = runner.return_code
+    STATE.return_code = runner.return_code
     STATE.write()
 
-    if STATE['return_code'] != 0:
+    if STATE.return_code != 0:
         STATE.failed = True
     STATE.write()
 
