@@ -42,6 +42,10 @@ class TestState(unittest.TestCase):
         state1.state_file = value
         self.assertEqual(state2.state_file, value)
 
+    def test_unknown_attrib(self):
+        with self.assertRaises(AttributeError):
+            print(STATE.abcdef)
+
     def test_write(self):
         self.assertEqual(STATE.state_file, None)
         STATE.state_file = tempfile.mkstemp(prefix='vchtest')[1]
