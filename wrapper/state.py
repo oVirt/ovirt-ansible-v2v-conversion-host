@@ -115,7 +115,8 @@ class _State(object):
         # converted as we should be then able to just json.dumps(self).
         state = self._state.copy()
         for key in hidden:
-            del state[key]
+            if key in state:
+                del state[key]
 
         hidden = ['internal'] + getattr(self, '_hidden', [])
         slots = [key for key in self.__slots__
