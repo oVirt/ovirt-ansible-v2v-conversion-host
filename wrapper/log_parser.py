@@ -183,7 +183,7 @@ class OutputParser(object):
         m = self.RHV_VM_ID.search(line)
         if m is not None:
             vm_id = m.group('uuid').decode('utf-8')
-            STATE['vm_id'] = vm_id
+            STATE.vm_id = vm_id
             logging.info('Created VM with id=%s', vm_id)
 
     def close(self):

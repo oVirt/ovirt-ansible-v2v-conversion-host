@@ -465,8 +465,8 @@ class OSPHost(BaseHost):
             return False
         else:
             vm = json.loads(vm)
-            STATE['vm_id'] = str(vm.get('id'))
-            logging.info('Created OSP instance with id=%s', STATE['vm_id'])
+            STATE.vm_id = str(vm.get('id'))
+            logging.info('Created OSP instance with id=%s', STATE.vm_id)
             return True
 
     def check_install_drivers(self, data):
