@@ -62,6 +62,7 @@ class _State(object):
         'failed',
         'internal',
         'last_message',
+        'pid',
         'throttling',
         'vm_id',
     ]
@@ -100,6 +101,7 @@ class _State(object):
             'throttling_file': None,
         }
         self.last_message = None
+        self.pid = None
         # Does it make sense to create a throttling class?
         self.throttling = {'cpu': None, 'network': None}
         self.vm_id = None

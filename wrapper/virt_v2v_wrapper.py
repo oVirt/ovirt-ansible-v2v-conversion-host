@@ -247,7 +247,7 @@ def wrapper(host, data, v2v_caps, agent_sock=None):
         STATE.failed = True
         STATE.write()
         return
-    STATE['pid'] = runner.pid
+    STATE.pid = runner.pid
     if 'throttling' in data:
         throttling_update(runner, data['throttling'])
 
