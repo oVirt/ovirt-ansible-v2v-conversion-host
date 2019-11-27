@@ -1,4 +1,3 @@
 ---
 v2v_vddk_override: false
 v2v_vddk_install_dir: /opt
-v2v_yum_check: latest
