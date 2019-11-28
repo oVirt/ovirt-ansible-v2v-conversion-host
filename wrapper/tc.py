@@ -1,12 +1,8 @@
 import logging
 import os
-import six
 import subprocess
 
 from .common import atexit_command
-
-if six.PY3:
-    xrange = range
 
 
 class TcController(object):
@@ -138,7 +134,8 @@ class TcController(object):
             ids = [class_[2] for class_ in classes]
             new_id = None
             logging.debug('Existing class IDs on %s: %r', iface, ids)
-            for i in xrange(1, 0x10000):
+            # TODO: [py2] Just use range
+            for i in getattr(__builtins__, 'xrange', range)(1, 0x10000):
                 test_id = '{}{:x}'.format(handle, i)
                 if test_id not in ids:
                     new_id = test_id

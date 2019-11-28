@@ -13,7 +13,6 @@ if six.PY2:
     py2unimode = 'U'
 else:
     py2unimode = ''
-    xrange = range
 
 
 class OutputParser(object):
@@ -195,7 +194,7 @@ class OutputParser(object):
             return
 
         # NOTE: We assume that _current_disk is monotonic
-        for i in xrange(self._current_disk, len(STATE['disks'])):
+        for i in range(self._current_disk, len(STATE['disks'])):
             if STATE['disks'][i].path == self._current_path:
                 if i == self._current_disk:
                     # We have correct index

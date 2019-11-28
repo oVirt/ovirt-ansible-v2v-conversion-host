@@ -140,7 +140,7 @@ class SystemdRunner(BaseRunner):
                 run_output)
         self._service_name = m.group(1)
         logging.info('Waiting for PID...')
-        for i in xrange(5):
+        for i in range(5):
             pid = self._systemd_property('ExecMainPID')
             if pid is not None and pid != '':
                 break

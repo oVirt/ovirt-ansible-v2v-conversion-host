@@ -2,14 +2,10 @@ import atexit
 import copy
 import logging
 import re
-import six
 import subprocess
 import sys
 
 from .state import STATE
-
-if six.PY3:
-    xrange = range
 
 
 def atexit_command(cmd):
@@ -86,7 +82,7 @@ def log_command_safe(args, env, log=None):
     env = copy.deepcopy(env)
     # Filter command
     arg_re = re.compile('([^=]*password[^=]*)=(.*)', re.IGNORECASE)
-    for i in xrange(1, len(args)):
+    for i in range(1, len(args)):
         m = arg_re.match(args[i])
         if m:
             args[i] = '%s=*****' % m.group(1)

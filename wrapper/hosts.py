@@ -33,10 +33,6 @@ TIMEOUT = 300
 DIRECT_BACKEND = True
 
 
-if six.PY3:
-    xrange = range
-
-
 class BaseHost(object):
     TYPE_UNKNOWN = 'unknown'
     TYPE_OSP = 'osp'
@@ -452,7 +448,7 @@ class OSPHost(BaseHost):
         for grp in data['osp_security_groups_ids']:
             os_command.extend(['--security-group', grp])
         os_command.extend(['--volume', volumes[0]])
-        for i in xrange(1, len(volumes)):
+        for i in range(1, len(volumes)):
             os_command.extend([
                 '--block-device-mapping',
                 '%s=%s' % (self._get_disk_name(i+1), volumes[i]),
