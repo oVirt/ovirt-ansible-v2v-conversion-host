@@ -28,7 +28,7 @@ install:
   - ansible --version
 
 script:
-  # Run sytax checks and linters
+  # Run syntax checks and linters
   - tox
   ## TODO: Test kubevirt containers
   # - cd kubevirt-provider/ && docker build -t v2v-conversion-host .
