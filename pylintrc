@@ -1,6 +1,6 @@
 [MASTER]
-# Use multiple processes to speed up Pylint.  It saves only couple of 6 seconds,
-# but the only thing it cannot fetch is duplicate-code, which was mostly
+# Use multiple processes to speed up Pylint.  It saves only couple of seconds,
+# but the only thing it cannot catch is duplicate-code, which was mostly
 # false-positive at the time of writing this
 jobs=0
 
