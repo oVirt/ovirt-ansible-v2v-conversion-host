@@ -11,6 +11,8 @@ import uuid
 
 from contextlib import contextmanager
 from io import BytesIO
+# TODO: [py2] Remove the comment for newer pylint
+# pylint: disable=bad-option-value,relative-import
 from six.moves.urllib.parse import urlparse
 
 from .common import error, hard_error, log_command_safe
