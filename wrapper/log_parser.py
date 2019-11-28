@@ -66,7 +66,8 @@ class OutputParser(object):
                 if message.get('type') == 'error':
                     message = message.get('message')
                     error('virt-v2v error: {}'.format(message))
-            except json.decoder.JSONDecodeError:
+            # TODO: [py2] Just use JSONDecodeError
+            except getattr(json.decoder, 'JSONDecodeError', ValueError):
                 logging.exception(
                     'Failed to parse line from'
                     ' virt-v2v machine readable output')
