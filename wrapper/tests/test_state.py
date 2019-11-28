@@ -5,7 +5,7 @@ from wrapper.state import STATE, Disk
 
 
 class TestState(unittest.TestCase):
-    """ Tests state object, make sure it it state """
+    """ Tests state object, make sure it behaves like a proper singleton """
 
     def setUp(self):
         # Destroy any previous state
