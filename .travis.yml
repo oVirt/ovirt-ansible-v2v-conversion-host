@@ -1,14 +1,14 @@
 ---
-sudo: required
 language: python
 python:
   - "3.6"
-services:
-  - docker
 
-env:
-  global:
-    - ANSIBLE_HOST_KEY_CHECKING="False"
+## TODO: Uncomment this when kubevirt tests are added
+# sudo: required
+# services:
+#  - docker
+# before_install:
+#  - docker pull centos:7
 
 # Install python-pip
 addons:
@@ -16,10 +16,6 @@ addons:
     packages:
       - python-pip
       - libgnutls.dev  # required by pycurl
-
-
-before_install:
-  - docker pull centos:7
 
 install:
   - pip install tox ansible
