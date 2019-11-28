@@ -11,11 +11,8 @@ from .tc import TcController
 
 VIRT_V2V = '/usr/bin/virt-v2v'
 
-if six.PY2:
-    DEVNULL = open(os.devnull, 'r+')
-else:
-    xrange = range
-    DEVNULL = subprocess.DEVNULL
+# TODO: [py2] Remove the line and use DEVNULL from subprocess directly
+DEVNULL = getattr(subprocess, 'DEVNULL', open(os.devnull, 'r+'))
 
 
 class BaseRunner(object):

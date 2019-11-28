@@ -38,11 +38,8 @@ from .runners import SystemdRunner
 from .log_parser import log_parser
 from .checks import CHECKS
 
-if six.PY2:
-    DEVNULL = open(os.devnull, 'r+')
-else:
-    xrange = range
-    DEVNULL = subprocess.DEVNULL
+# py2
+DEVNULL = getattr(subprocess, 'DEVNULL', open(os.devnull, 'r+'))
 
 # Wrapper version
 VERSION = "23"
