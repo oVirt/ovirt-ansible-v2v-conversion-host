@@ -24,7 +24,7 @@ install:
 
 script:
   # Run syntax checks and linters
-  - tox
+  - tox -p all
   ## TODO: Test kubevirt containers
   # - cd kubevirt-provider/ && docker build -t v2v-conversion-host .
   # - docker run --detach --publish 8080:8080 v2v-conversion-host
