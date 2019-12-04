@@ -260,7 +260,7 @@ def wrapper(host, data, v2v_caps, agent_sock=None):
     try:
         state['started'] = True
         state.write()
-        with log_parser(type(host) is CNVHost) as parser:
+        with log_parser(isinstance(host, CNVHost)) as parser:
             while runner.is_running():
                 state = parser.parse(state)
                 state.write()
